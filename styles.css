@@ -1,0 +1,332 @@
+:root {
+    /* Palette aligned to Antonio.png background (warm beige + cocoa accents) */
+    --bg: #f5e6d3;
+    --card-bg: #ffffff;
+    --primary: #c07a4a;        /* cocoa/terracotta */
+    --primary-dark: #9a5d39;   /* deeper cocoa */
+    --text-main: #2a231d;
+    --text-muted: #6e6258;
+    --border-soft: #ead8c4;
+    --radius-lg: 18px;
+    --shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.06);
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #f8ead7, #f2dfc6, var(--bg));
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+  }
+  
+  /* Container principal */
+  .page {
+    width: 100%;
+    max-width: 1120px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(6px);
+    border-radius: 24px;
+    box-shadow: var(--shadow-soft);
+    padding: 24px;
+  }
+  
+  @media (min-width: 768px) {
+    .page {
+      padding: 32px 40px 40px;
+    }
+  }
+  
+  /* Cabeçalho */
+  
+  .header {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    border-radius: 20px;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, #f1dcc3, var(--bg));
+    border: 1px solid var(--border-soft);
+    margin-bottom: 28px;
+  }
+  
+  @media (min-width: 768px) {
+    .header {
+      padding: 22px 26px;
+      gap: 26px;
+    }
+  }
+  
+  .chef-avatar {
+    flex-shrink: 0;
+    width: 184px;
+    height: 184px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 20%, #ffffff, #f3dfc7);
+    border: 3px solid #e7c8a6;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Header text only: center vertically beside the big avatar */
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+  }
+  
+  .chef-avatar span {
+    font-size: 42px;
+  }
+  
+  /* Se usar imagem, ela ocupa o círculo todo */
+  .chef-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .chef-tag {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    background: var(--primary);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .header-text h1 {
+    font-size: 1.8rem;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  
+  .header-text h1 span {
+    color: var(--primary-dark);
+  }
+  
+  .header-text p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    max-width: 420px;
+  }
+  
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    background: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px dashed #e7c8a6;
+    margin-top: 8px;
+    color: var(--text-muted);
+  }
+  
+  .header-badge span {
+    font-size: 1rem;
+  }
+  
+  /* Seção de apps */
+  
+  .apps-section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .apps-section-title h2 {
+    font-size: 1.1rem;
+  }
+  
+  .apps-section-title p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  
+  .app-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  @media (min-width: 600px) {
+    .app-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  @media (min-width: 930px) {
+    .app-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  
+  /* Cartões das apps */
+  
+  .app-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 14px 16px;
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
+    transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+      border-color 0.12s ease-out;
+    position: relative;
+    overflow: hidden;
+    min-height: 230px; /* unify baseline height across cards */
+  }
+  
+  /* Soft expanding background using the app image */
+  .app-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-position: right -30% bottom -30%;
+    background-size: 180px 180px;
+    background-image: var(--card-bg-img);
+    opacity: 0.1;
+    transform: scale(1);
+    filter: blur(14px) saturate(110%);
+    transition: opacity 0.25s ease, transform 0.25s ease, background-size 0.25s ease, filter 0.25s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  .app-card:hover::before {
+    opacity: 0.18;
+    transform: scale(1.04);
+    background-size: 240px 240px;
+    filter: blur(10px) saturate(120%);
+  }
+  
+  /* Ensure foreground content sits above */
+  .app-card > * {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    border-color: #e7c8a6;
+  }
+  
+  .app-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #f6eadc;
+  }
+  
+  .app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  
+  .app-title {
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+  
+  .app-desc {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* roughly the length of Code Show */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .app-meta {
+    margin-top: 4px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .app-meta-tag {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #fbf3ea;
+    border: 1px solid #edd8c3;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8f5b3a;
+  }
+  
+  .app-cta {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--primary-dark);
+    font-weight: 500;
+  }
+  
+  /* Read more button */
+  .read-more {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: var(--primary-dark);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  /* Expanded card removes clamp and can grow */
+  .app-card.expanded {
+    min-height: unset;
+  }
+  .app-card.expanded .app-desc {
+    -webkit-line-clamp: unset;
+  }
+  
+  .app-cta span {
+    font-size: 1.1rem;
+  }
+  
+  /* Rodapé */
+  
+  .footer {
+    margin-top: 22px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  
