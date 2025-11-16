@@ -97,6 +97,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transform: scale(1.02);
+    transform-origin: center;
   }
   
   .chef-tag {
@@ -143,6 +145,26 @@
   
   .header-badge span {
     font-size: 1rem;
+  }
+  
+  @media (max-width: 640px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+  
+    .header-text {
+      width: 100%;
+      align-items: flex-start;
+      text-align: left;
+      margin-top: 14px;
+    }
+  
+    .header-text h1 {
+      font-size: 1.5rem;
+      text-align: left;
+    }
   }
   
   /* Seção de apps */
@@ -317,8 +339,24 @@
     -webkit-line-clamp: unset;
   }
   
-  .app-cta span {
+.app-cta span:not(.secondary-link) {
     font-size: 1.1rem;
+  }
+  
+  .secondary-link {
+    color: var(--primary-dark);
+    text-decoration: underline;
+    cursor: pointer;
+    opacity: 0.9;
+    font-size: 0.74rem;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .secondary-link:hover {
+    opacity: 1;
   }
   
   /* Rodapé */

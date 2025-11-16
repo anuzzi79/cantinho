@@ -28,5 +28,15 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .forEach((card) => grid.appendChild(card));
     }
+
+    // Secondary link inside cards (open without triggering parent anchor)
+    document.querySelectorAll(".secondary-link").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = el.getAttribute("data-url");
+        if (url) window.open(url, "_blank");
+      });
+    });
   });
   
