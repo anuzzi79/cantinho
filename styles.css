@@ -324,11 +324,12 @@
   
   /* Read more button */
   .read-more {
-    margin-top: 6px;
+    margin-top: -2px;
     font-size: 0.8rem;
     color: var(--primary-dark);
     text-decoration: underline;
     cursor: pointer;
+    display: inline-block;
   }
   
   /* Expanded card removes clamp and can grow */
