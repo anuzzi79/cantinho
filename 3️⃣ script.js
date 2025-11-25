@@ -5,6 +5,32 @@ document.addEventListener("DOMContentLoaded", () => {
       yearSpan.textContent = new Date().getFullYear();
     }
 
+    // Carica contenuti salvati da localStorage
+    loadSavedContent();
+
+    // Listener per 5 click sull'immagine dell'header per aprire Settings
+    let clickCount = 0;
+    let clickTimer = null;
+    const chefAvatar = document.getElementById("chef-avatar-img");
+    
+    if (chefAvatar) {
+      chefAvatar.style.cursor = "pointer";
+      chefAvatar.addEventListener("click", () => {
+        clickCount++;
+        
+        // Reset timer dopo 2 secondi
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 2000);
+        
+        if (clickCount === 5) {
+          window.location.href = "settings.html";
+          clickCount = 0;
+        }
+      });
+    }
+
     // Read more / less toggles for long descriptions
     document.querySelectorAll("[data-read-more]").forEach((btn) => {
       const card = btn.closest(".app-card");
@@ -38,5 +64,29 @@ document.addEventListener("DOMContentLoaded", () => {
         if (url) window.open(url, "_blank");
       });
     });
+
+    // Funzione per caricare contenuti salvati
+    function loadSavedContent() {
+      // Carica testo "O que tem de novo"
+      const whatsNewContent = localStorage.getItem("whatsNewContent");
+      const whatsNewElement = document.getElementById("whats-new-content");
+      if (whatsNewContent && whatsNewElement) {
+        whatsNewElement.textContent = whatsNewContent;
+      }
+
+      // Carica Image 1
+      const image1Data = localStorage.getItem("image1Data");
+      const image1Element = document.getElementById("image-1");
+      if (image1Data && image1Element) {
+        image1Element.src = image1Data;
+      }
+
+      // Carica Image 2
+      const image2Data = localStorage.getItem("image2Data");
+      const image2Element = document.getElementById("image-2");
+      if (image2Data && image2Element) {
+        image2Element.src = image2Data;
+      }
+    }
   });
   

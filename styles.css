@@ -153,17 +153,100 @@
       align-items: flex-start;
       text-align: left;
     }
-  
+    
     .header-text {
       width: 100%;
       align-items: flex-start;
       text-align: left;
       margin-top: 14px;
     }
-  
+    
     .header-text h1 {
       font-size: 1.5rem;
       text-align: left;
+    }
+  }
+  
+  /* Sezione "O que tem de novo" wrapper - allineata alla griglia */
+  .whats-new-section-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  @media (min-width: 600px) {
+    .whats-new-section-wrapper {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 930px) {
+    .whats-new-section-wrapper {
+      grid-template-columns: 2fr 1fr; /* 2 card + 1 card */
+      gap: 14px;
+    }
+  }
+
+  /* Sezione "O que tem de novo" - occupa 2 colonne (spazio di 2 card) */
+  .whats-new-section {
+    padding: 14px 14px 16px;
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
+  }
+
+  .whats-new-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-main);
+  }
+
+  .whats-new-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Image boxes container - nella sezione whats-new-section-wrapper */
+  .whats-new-section-wrapper .image-boxes {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Ogni image box - insieme occupano lo spazio di 1 card */
+  .whats-new-section-wrapper .image-box {
+    width: calc(50% - 4px);
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .whats-new-section-wrapper .image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Responsive per image boxes nella sezione whats-new */
+  @media (max-width: 929px) {
+    .whats-new-section-wrapper .image-boxes {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 599px) {
+    .whats-new-section-wrapper .image-boxes {
+      width: 100%;
     }
   }
   

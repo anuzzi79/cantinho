@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings - O cantinho do Antonio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="Icons-App/cantinho.png" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .settings-page {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 32px;
+    }
+
+    .settings-header {
+      margin-bottom: 32px;
+    }
+
+    .settings-header h1 {
+      font-size: 2rem;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      cursor: default;
+      user-select: none;
+    }
+
+    .settings-header a {
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .settings-header a:hover {
+      text-decoration: underline;
+    }
+
+    .settings-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
+    }
+
+    .settings-section h2 {
+      font-size: 1.2rem;
+      color: var(--text-main);
+      margin-bottom: 16px;
+    }
+
+    .text-editor {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      font-family: "Poppins", sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .text-editor:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .image-upload-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .image-upload-group label {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      min-width: 80px;
+      font-weight: 500;
+    }
+
+    .image-upload-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+      background: var(--card-bg);
+      color: var(--primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .image-upload-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .image-upload-btn input[type="file"] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .image-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border-soft);
+      display: none;
+    }
+
+    .image-preview.show {
+      display: block;
+    }
+
+    .save-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 16px;
+    }
+
+    .save-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .save-btn:active {
+      transform: scale(0.98);
+    }
+
+    .success-message {
+      background: #4caf50;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="settings-page">
+      <div class="settings-header">
+        <h1 id="settings-title">Settings</h1>
+        <a href="index.html">← Torna alla pagina principale</a>
+      </div>
+
+      <div class="settings-section">
+        <h2>Testo "O que tem de novo"</h2>
+        <textarea 
+          id="whats-new-textarea" 
+          class="text-editor" 
+          placeholder="Inserisci il testo per la sezione 'O que tem de novo'..."
+        ></textarea>
+      </div>
+
+      <div class="settings-section">
+        <h2>Immagini</h2>
+        
+        <div class="image-upload-group">
+          <label>Image 1:</label>
+          <button class="image-upload-btn" type="button">
+            <input 
+              type="file" 
+              id="image1-input" 
+              accept="image/png,image/jpeg,image/jpg"
+            >
+            +
+          </button>
+          <img id="image1-preview" class="image-preview" alt="Preview Image 1">
+        </div>
+
+        <div class="image-upload-group">
+          <label>Image 2:</label>
+          <button class="image-upload-btn" type="button">
+            <input 
+              type="file" 
+              id="image2-input" 
+              accept="image/png,image/jpeg,image/jpg"
+            >
+            +
+          </button>
+          <img id="image2-preview" class="image-preview" alt="Preview Image 2">
+        </div>
+      </div>
+
+      <button id="save-btn" class="save-btn">Salva</button>
+      
+      <div id="success-message" class="success-message">
+        Impostazioni salvate con successo!
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Carica contenuti salvati
+      loadSavedSettings();
+
+      // Textarea per "O que tem de novo"
+      const whatsNewTextarea = document.getElementById("whats-new-textarea");
+      const whatsNewContent = localStorage.getItem("whatsNewContent");
+      if (whatsNewContent) {
+        whatsNewTextarea.value = whatsNewContent;
+      }
+
+      // Image 1 upload
+      const image1Input = document.getElementById("image1-input");
+      const image1Preview = document.getElementById("image1-preview");
+      
+      image1Input.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          // Verifica che sia PNG o JPG
+          if (!file.type.match(/^image\/(png|jpeg|jpg)$/)) {
+            alert("Per favore, seleziona un'immagine PNG o JPG");
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imageData = event.target.result;
+            image1Preview.src = imageData;
+            image1Preview.classList.add("show");
+            localStorage.setItem("image1Data", imageData);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Image 2 upload
+      const image2Input = document.getElementById("image2-input");
+      const image2Preview = document.getElementById("image2-preview");
+      
+      image2Input.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          // Verifica che sia PNG o JPG
+          if (!file.type.match(/^image\/(png|jpeg|jpg)$/)) {
+            alert("Per favore, seleziona un'immagine PNG o JPG");
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imageData = event.target.result;
+            image2Preview.src = imageData;
+            image2Preview.classList.add("show");
+            localStorage.setItem("image2Data", imageData);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      const saveBtn = document.getElementById("save-btn");
+      const successMessage = document.getElementById("success-message");
+      const settingsTitle = document.getElementById("settings-title");
+      
+      let saveClickCount = 0;
+      let clickTimer = null;
+
+      saveBtn.addEventListener("click", () => {
+        saveClickCount++;
+        
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => {
+          saveClickCount = 0;
+        }, 3000);
+      });
+
+      settingsTitle.addEventListener("click", () => {
+        if (saveClickCount === 5) {
+          const text = whatsNewTextarea.value;
+          localStorage.setItem("whatsNewContent", text);
+
+          successMessage.classList.add("show");
+          setTimeout(() => {
+            successMessage.classList.remove("show");
+          }, 3000);
+
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1000);
+          
+          saveClickCount = 0;
+        } else {
+          saveClickCount = 0;
+        }
+      });
+    });
+
+    function loadSavedSettings() {
+      // Carica Image 1
+      const image1Data = localStorage.getItem("image1Data");
+      if (image1Data) {
+        const image1Preview = document.getElementById("image1-preview");
+        image1Preview.src = image1Data;
+        image1Preview.classList.add("show");
+      }
+
+      // Carica Image 2
+      const image2Data = localStorage.getItem("image2Data");
+      if (image2Data) {
+        const image2Preview = document.getElementById("image2-preview");
+        image2Preview.src = image2Data;
+        image2Preview.classList.add("show");
+      }
+    }
+  </script>
+</body>
+</html>
+
