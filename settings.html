@@ -212,6 +212,17 @@
         </div>
       </div>
 
+      <div class="settings-section">
+        <h2>EasyJira, Url para download:</h2>
+        <input 
+          type="url" 
+          id="easyjira-url-input" 
+          class="text-editor" 
+          placeholder="https://drive.google.com/file/d/..."
+          style="min-height: auto; height: 40px;"
+        >
+      </div>
+
       <button id="save-btn" class="save-btn">Salva</button>
       
       <div id="success-message" class="success-message">
@@ -275,6 +286,32 @@
       }
       
       loadWhatsNewFromFirestore();
+
+      // Carica URL EasyJira quando disponibile
+      const easyJiraUrlInput = document.getElementById("easyjira-url-input");
+      
+      async function loadEasyJiraUrlFromFirestore() {
+        if (!window.db) {
+          setTimeout(loadEasyJiraUrlFromFirestore, 100);
+          return;
+        }
+        
+        try {
+          const settingsRef = doc(window.db, "settings", "main");
+          const settingsSnap = await getDoc(settingsRef);
+          
+          if (settingsSnap.exists()) {
+            const data = settingsSnap.data();
+            if (data.easyJiraDownloadUrl) {
+              easyJiraUrlInput.value = data.easyJiraDownloadUrl;
+            }
+          }
+        } catch (error) {
+          console.error("Errore nel caricamento:", error);
+        }
+      }
+      
+      loadEasyJiraUrlFromFirestore();
 
       // Image 1 upload
       const image1Input = document.getElementById("image1-input");
@@ -362,11 +399,16 @@
               return;
             }
 
+            // Prendi URL EasyJira
+            const easyJiraUrlInput = document.getElementById("easyjira-url-input");
+            const easyJiraUrl = easyJiraUrlInput ? easyJiraUrlInput.value || "" : "";
+
             // Salva su Firestore
             await setDoc(doc(window.db, "settings", "main"), {
               whatsNewContent: text,
               image1Data: image1Data,
-              image2Data: image2Data
+              image2Data: image2Data,
+              easyJiraDownloadUrl: easyJiraUrl
             });
 
             successMessage.classList.add("show");

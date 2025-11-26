@@ -103,6 +103,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (data.image2Data && image2Element) {
             image2Element.src = data.image2Data;
           }
+
+          // Carica URL EasyJira Download
+          const easyJiraUrlElement = document.getElementById("easyjira-download-url");
+          if (data.easyJiraDownloadUrl && easyJiraUrlElement) {
+            easyJiraUrlElement.setAttribute("data-url", data.easyJiraDownloadUrl);
+          }
         }
       } catch (error) {
         console.error("Errore nel caricamento da Firestore:", error);
