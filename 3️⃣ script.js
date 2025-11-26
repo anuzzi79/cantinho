@@ -65,27 +65,47 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Funzione per caricare contenuti salvati
-    function loadSavedContent() {
-      // Carica testo "O que tem de novo"
-      const whatsNewContent = localStorage.getItem("whatsNewContent");
-      const whatsNewElement = document.getElementById("whats-new-content");
-      if (whatsNewContent && whatsNewElement) {
-        whatsNewElement.textContent = whatsNewContent;
+    // Funzione per caricare contenuti salvati da Firestore
+    async function loadSavedContent() {
+      // Aspetta che Firebase sia inizializzato
+      let retries = 0;
+      while (!window.db && retries < 10) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
       }
 
-      // Carica Image 1
-      const image1Data = localStorage.getItem("image1Data");
-      const image1Element = document.getElementById("image-1");
-      if (image1Data && image1Element) {
-        image1Element.src = image1Data;
+      if (!window.db) {
+        console.log("Firebase non ancora inizializzato");
+        return;
       }
 
-      // Carica Image 2
-      const image2Data = localStorage.getItem("image2Data");
-      const image2Element = document.getElementById("image-2");
-      if (image2Data && image2Element) {
-        image2Element.src = image2Data;
+      try {
+        const settingsRef = doc(window.db, "settings", "main");
+        const settingsSnap = await getDoc(settingsRef);
+
+        if (settingsSnap.exists()) {
+          const data = settingsSnap.data();
+
+          // Carica testo "O que tem de novo"
+          const whatsNewElement = document.getElementById("whats-new-content");
+          if (data.whatsNewContent && whatsNewElement) {
+            whatsNewElement.textContent = data.whatsNewContent;
+          }
+
+          // Carica Image 1
+          const image1Element = document.getElementById("image-1");
+          if (data.image1Data && image1Element) {
+            image1Element.src = data.image1Data;
+          }
+
+          // Carica Image 2
+          const image2Element = document.getElementById("image-2");
+          if (data.image2Data && image2Element) {
+            image2Element.src = data.image2Data;
+          }
+        }
+      } catch (error) {
+        console.error("Errore nel caricamento da Firestore:", error);
       }
     }
   });

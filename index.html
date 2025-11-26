@@ -292,6 +292,28 @@
     </footer>
   </main>
 
+  <script type="module">
+    // Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
+      authDomain: "cantinho-b2b09.firebaseapp.com",
+      projectId: "cantinho-b2b09",
+      storageBucket: "cantinho-b2b09.firebasestorage.app",
+      messagingSenderId: "1035287669836",
+      appId: "1:1035287669836:web:a64eed7bae8a5aa31998e9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Esponi db globalmente per usarlo in altri script
+    window.db = db;
+    window.getDoc = getDoc;
+    window.doc = doc;
+  </script>
   <script src="3️⃣ script.js"></script>
 </body>
 </html>

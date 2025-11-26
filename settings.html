@@ -220,17 +220,61 @@
     </div>
   </main>
 
+  <script type="module">
+    // Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
+      authDomain: "cantinho-b2b09.firebaseapp.com",
+      projectId: "cantinho-b2b09",
+      storageBucket: "cantinho-b2b09.firebasestorage.app",
+      messagingSenderId: "1035287669836",
+      appId: "1:1035287669836:web:a64eed7bae8a5aa31998e9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Esponi db globalmente
+    window.db = db;
+    window.setDoc = setDoc;
+    window.getDoc = getDoc;
+    window.doc = doc;
+  </script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // Carica contenuti salvati
       loadSavedSettings();
 
-      // Textarea per "O que tem de novo"
+      // Textarea per "O que tem de novo" - carica da Firestore
       const whatsNewTextarea = document.getElementById("whats-new-textarea");
-      const whatsNewContent = localStorage.getItem("whatsNewContent");
-      if (whatsNewContent) {
-        whatsNewTextarea.value = whatsNewContent;
+      
+      // Carica da Firestore quando disponibile
+      async function loadWhatsNewFromFirestore() {
+        if (!window.db) {
+          // Aspetta che Firebase sia inizializzato
+          setTimeout(loadWhatsNewFromFirestore, 100);
+          return;
+        }
+        
+        try {
+          const settingsRef = doc(window.db, "settings", "main");
+          const settingsSnap = await getDoc(settingsRef);
+          
+          if (settingsSnap.exists()) {
+            const data = settingsSnap.data();
+            if (data.whatsNewContent) {
+              whatsNewTextarea.value = data.whatsNewContent;
+            }
+          }
+        } catch (error) {
+          console.error("Errore nel caricamento:", error);
+        }
       }
+      
+      loadWhatsNewFromFirestore();
 
       // Image 1 upload
       const image1Input = document.getElementById("image1-input");
@@ -296,42 +340,96 @@
         }, 3000);
       });
 
-      settingsTitle.addEventListener("click", () => {
+      settingsTitle.addEventListener("click", async () => {
         if (saveClickCount === 5) {
-          const text = whatsNewTextarea.value;
-          localStorage.setItem("whatsNewContent", text);
+          try {
+            const text = whatsNewTextarea.value;
+            
+            // Prendi anche le immagini già caricate (da localStorage temporaneo)
+            const image1Data = localStorage.getItem("image1Data") || "";
+            const image2Data = localStorage.getItem("image2Data") || "";
 
-          successMessage.classList.add("show");
-          setTimeout(() => {
-            successMessage.classList.remove("show");
-          }, 3000);
+            // Aspetta che Firebase sia inizializzato
+            let retries = 0;
+            while (!window.db && retries < 10) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              retries++;
+            }
 
-          setTimeout(() => {
-            window.location.href = "index.html";
-          }, 1000);
-          
-          saveClickCount = 0;
+            if (!window.db) {
+              alert("Errore: Firebase non inizializzato. Riprova.");
+              saveClickCount = 0;
+              return;
+            }
+
+            // Salva su Firestore
+            await setDoc(doc(window.db, "settings", "main"), {
+              whatsNewContent: text,
+              image1Data: image1Data,
+              image2Data: image2Data
+            });
+
+            successMessage.classList.add("show");
+            setTimeout(() => {
+              successMessage.classList.remove("show");
+            }, 3000);
+
+            setTimeout(() => {
+              window.location.href = "index.html";
+            }, 1000);
+            
+            saveClickCount = 0;
+          } catch (error) {
+            console.error("Errore nel salvataggio:", error);
+            alert("Errore nel salvataggio. Riprova.");
+            saveClickCount = 0;
+          }
         } else {
           saveClickCount = 0;
         }
       });
     });
 
-    function loadSavedSettings() {
-      // Carica Image 1
-      const image1Data = localStorage.getItem("image1Data");
-      if (image1Data) {
-        const image1Preview = document.getElementById("image1-preview");
-        image1Preview.src = image1Data;
-        image1Preview.classList.add("show");
+    async function loadSavedSettings() {
+      // Aspetta che Firebase sia inizializzato
+      let retries = 0;
+      while (!window.db && retries < 10) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
       }
 
-      // Carica Image 2
-      const image2Data = localStorage.getItem("image2Data");
-      if (image2Data) {
-        const image2Preview = document.getElementById("image2-preview");
-        image2Preview.src = image2Data;
-        image2Preview.classList.add("show");
+      if (!window.db) {
+        console.log("Firebase non ancora inizializzato");
+        return;
+      }
+
+      try {
+        const settingsRef = doc(window.db, "settings", "main");
+        const settingsSnap = await getDoc(settingsRef);
+
+        if (settingsSnap.exists()) {
+          const data = settingsSnap.data();
+
+          // Carica Image 1
+          if (data.image1Data) {
+            const image1Preview = document.getElementById("image1-preview");
+            image1Preview.src = data.image1Data;
+            image1Preview.classList.add("show");
+            // Salva anche in localStorage per il salvataggio
+            localStorage.setItem("image1Data", data.image1Data);
+          }
+
+          // Carica Image 2
+          if (data.image2Data) {
+            const image2Preview = document.getElementById("image2-preview");
+            image2Preview.src = data.image2Data;
+            image2Preview.classList.add("show");
+            // Salva anche in localStorage per il salvataggio
+            localStorage.setItem("image2Data", data.image2Data);
+          }
+        }
+      } catch (error) {
+        console.error("Errore nel caricamento da Firestore:", error);
       }
     }
   </script>
