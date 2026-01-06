@@ -38,6 +38,8 @@
       <div class="header-text">
         <h1>O cantinho do <span>Antonio</span></h1>
       </div>
+
+      <a href="blog.html" class="blog-button-handwritten">BLOG</a>
     </header>
 
     <!-- Sezione "O que tem de novo" allineata alla griglia -->
@@ -325,7 +327,7 @@
   <script type="module">
     // Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -343,6 +345,11 @@
     window.db = db;
     window.getDoc = getDoc;
     window.doc = doc;
+    window.collection = collection;
+    window.getDocs = getDocs;
+    window.query = query;
+    window.orderBy = orderBy;
+    window.limit = limit;
   </script>
   <script src="3️⃣ script.js"></script>
 </body>

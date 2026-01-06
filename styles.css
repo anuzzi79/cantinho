@@ -146,8 +146,34 @@
   .header-badge span {
     font-size: 1rem;
   }
-  
+
+  /* Blog Button Handwritten Style */
+  .blog-button-handwritten {
+    margin-left: auto;
+    font-family: "Brush Script MT", "Comic Sans MS", cursive, sans-serif;
+    font-size: 3.5rem;
+    color: #d93025; /* Red like in the image */
+    text-decoration: none;
+    transform: rotate(-10deg);
+    transition: transform 0.2s, scale 0.2s;
+    user-select: none;
+    display: block;
+    padding: 10px;
+    filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.05));
+  }
+
+  .blog-button-handwritten:hover {
+    transform: rotate(-5deg) scale(1.1);
+    color: #b22a1e;
+  }
+
   @media (max-width: 640px) {
+    .blog-button-handwritten {
+      font-size: 2.5rem;
+      margin-left: 0;
+      margin-top: 10px;
+      align-self: flex-end;
+    }
     .header {
       flex-direction: column;
       align-items: flex-start;
@@ -451,4 +477,30 @@
     color: var(--text-muted);
     text-align: center;
   }
-  
+
+  /* Blog Styles */
+  .blog-section {
+    margin-bottom: 32px;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .blog-card {
+    min-height: auto !important;
+  }
+
+  .blog-card .app-desc {
+    -webkit-line-clamp: 5;
+    margin-bottom: 10px;
+  }
+
+  .blog-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: block;
+  }

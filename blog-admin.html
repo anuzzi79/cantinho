@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Blog - O Cantinho</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="Icons-App/cantinho.png" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .btn-new-post {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 600px;
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Post Management List */
+    .posts-admin-list {
+      display: grid;
+      gap: 15px;
+    }
+
+    .post-admin-card {
+      background: white;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      cursor: grab;
+    }
+
+    .post-admin-card:active { cursor: grabbing; }
+
+    .post-admin-info { flex: 1; }
+    .post-admin-info h3 { font-size: 1rem; margin-bottom: 4px; }
+    .post-admin-info span { font-size: 0.8rem; color: var(--text-muted); }
+
+    .post-admin-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action {
+      border: none;
+      background: #f0f0f0;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover { background: #e0e0e0; }
+    .btn-delete:hover { background: #fee2e2; color: #dc2626; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.9rem; margin-bottom: 5px; font-weight: 500; }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="admin-container">
+      <nav style="margin-bottom: 20px;">
+        <a href="settings.html" style="text-decoration: none; color: var(--text-muted);">← Torna a Settings</a>
+      </nav>
+
+      <div class="admin-header">
+        <h1>Gestione Diario</h1>
+        <button class="btn-new-post" id="open-modal-btn">
+          <span>+</span> Nuovo Post
+        </button>
+      </div>
+
+      <div id="admin-posts-list" class="posts-admin-list">
+        <!-- Post carichi qui -->
+        <p>Caricamento post...</p>
+      </div>
+    </div>
+
+    <!-- Modal per Nuovo/Modifica Post -->
+    <div id="post-modal" class="modal">
+      <div class="modal-content">
+        <h2 id="modal-title">Nuovo Post</h2>
+        <form id="post-form" style="margin-top: 20px;">
+          <input type="hidden" id="edit-post-id">
+          <div class="form-group">
+            <label>Titolo</label>
+            <input type="text" id="post-title" required>
+          </div>
+          <div class="form-group">
+            <label>URL Immagine</label>
+            <input type="text" id="post-image-url" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label>Contenuto</label>
+            <textarea id="post-content" rows="8" required></textarea>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="save-btn" style="flex: 1; margin: 0;">Salva Post</button>
+            <button type="button" id="close-modal-btn" class="btn-action" style="flex: 1;">Annulla</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
+      authDomain: "cantinho-b2b09.firebaseapp.com",
+      projectId: "cantinho-b2b09",
+      storageBucket: "cantinho-b2b09.firebasestorage.app",
+      messagingSenderId: "1035287669836",
+      appId: "1:1035287669836:web:a64eed7bae8a5aa31998e9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const postsList = document.getElementById('admin-posts-list');
+    const modal = document.getElementById('post-modal');
+    const postForm = document.getElementById('post-form');
+
+    async function loadAdminPosts() {
+      const q = query(collection(db, "posts"), orderBy("date", "desc"));
+      const snapshot = await getDocs(q);
+      postsList.innerHTML = '';
+      
+      snapshot.forEach(docSnap => {
+        const post = docSnap.data();
+        const id = docSnap.id;
+        const date = new Date(post.date).toLocaleDateString();
+
+        const card = document.createElement('div');
+        card.className = 'post-admin-card';
+        card.innerHTML = `
+          <div class="post-admin-info">
+            <h3>${post.title}</h3>
+            <span>${date}</span>
+          </div>
+          <div class="post-admin-actions">
+            <button class="btn-action" onclick="window.editPost('${id}')">✏️</button>
+            <button class="btn-action btn-delete" onclick="window.deletePost('${id}')">🗑️</button>
+          </div>
+        `;
+        postsList.appendChild(card);
+      });
+    }
+
+    window.editPost = async (id) => {
+      const snapshot = await getDocs(query(collection(db, "posts")));
+      const postDoc = snapshot.docs.find(d => d.id === id);
+      if (postDoc) {
+        const post = postDoc.data();
+        document.getElementById('edit-post-id').value = id;
+        document.getElementById('post-title').value = post.title;
+        document.getElementById('post-image-url').value = post.imageUrl || '';
+        document.getElementById('post-content').value = post.content;
+        document.getElementById('modal-title').textContent = 'Modifica Post';
+        modal.style.display = 'flex';
+      }
+    };
+
+    window.deletePost = async (id) => {
+      if (confirm('Sei sicuro di voler cancellare questo post?')) {
+        await deleteDoc(doc(db, "posts", id));
+        loadAdminPosts();
+      }
+    };
+
+    postForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-post-id').value;
+      const data = {
+        title: document.getElementById('post-title').value,
+        imageUrl: document.getElementById('post-image-url').value || "Icons-App/cantinho.png",
+        content: document.getElementById('post-content').value,
+        date: id ? undefined : new Date().toISOString()
+      };
+
+      if (id) {
+        await updateDoc(doc(db, "posts", id), data);
+      } else {
+        await addDoc(collection(db, "posts"), { ...data, date: new Date().toISOString() });
+      }
+      
+      modal.style.display = 'none';
+      postForm.reset();
+      loadAdminPosts();
+    };
+
+    document.getElementById('open-modal-btn').onclick = () => {
+      document.getElementById('edit-post-id').value = '';
+      postForm.reset();
+      document.getElementById('modal-title').textContent = 'Nuovo Post';
+      modal.style.display = 'flex';
+    };
+
+    document.getElementById('close-modal-btn').onclick = () => modal.style.display = 'none';
+    
+    loadAdminPosts();
+  </script>
+</body>
+</html>
+

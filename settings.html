@@ -223,7 +223,17 @@
         >
       </div>
 
-      <button id="save-btn" class="save-btn">Salva</button>
+      <div class="settings-section">
+        <h2>Gestione Diario</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+          Gestisci i post del blog, modificali, cancellali o creane di nuovi.
+        </p>
+        <a href="blog-admin.html" class="save-btn" style="text-decoration: none; display: inline-block; text-align: center;">
+          Vai all'Edizione Blog →
+        </a>
+      </div>
+
+      <button id="save-btn" class="save-btn">Salva Impostazioni Generali</button>
       
       <div id="success-message" class="success-message">
         Impostazioni salvate con successo!
@@ -234,7 +244,7 @@
   <script type="module">
     // Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -253,6 +263,8 @@
     window.setDoc = setDoc;
     window.getDoc = getDoc;
     window.doc = doc;
+    window.addDoc = addDoc;
+    window.collection = collection;
   </script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {

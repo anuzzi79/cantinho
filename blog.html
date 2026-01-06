@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Blog do Antonio - O Cantinho</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="Icons-App/cantinho.png" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --blog-accent: #d93025;
+      --font-serif: 'Playfair Display', serif;
+    }
+
+    .blog-page-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding-bottom: 60px;
+    }
+
+    .blog-hero {
+      text-align: center;
+      padding: 60px 20px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 40px;
+    }
+
+    .blog-hero h1 {
+      font-family: var(--font-serif);
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .blog-hero p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    /* Post list styles */
+    .blog-posts-list {
+      display: grid;
+      gap: 40px;
+    }
+
+    .featured-post {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    @media (min-width: 768px) {
+      .featured-post {
+        grid-template-columns: 1.2fr 1fr;
+        align-items: center;
+      }
+    }
+
+    .post-image-wrapper {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .post-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .post-content-preview h2 {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .post-content-preview h2:hover {
+      color: var(--blog-accent);
+    }
+
+    .post-meta-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .post-excerpt {
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .read-full-post {
+      color: var(--blog-accent);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Single Post View */
+    #single-post-view {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .back-to-list {
+      margin-bottom: 20px;
+      display: inline-block;
+      cursor: pointer;
+      color: var(--primary-dark);
+      font-weight: 500;
+    }
+
+    .single-post-header {
+      margin-bottom: 30px;
+    }
+
+    .single-post-header h1 {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .full-content {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-main);
+    }
+
+    .full-content p {
+      margin-bottom: 20px;
+    }
+
+    .full-content img {
+      max-width: 100%;
+      border-radius: var(--radius-lg);
+      margin: 30px 0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="blog-page-container">
+      <nav style="padding: 20px 0;">
+        <a href="index.html" style="text-decoration: none; color: var(--text-muted);">← Voltar ao Cantinho</a>
+      </nav>
+
+      <!-- Sezione Lista Post -->
+      <div id="posts-list-view">
+        <header class="blog-hero">
+          <h1>Il Diario di Antonio</h1>
+          <p>Pensieri, codice e avventure dal Cantinho.</p>
+        </header>
+
+        <div id="blog-posts-container" class="blog-posts-list">
+          <!-- Caricamento post... -->
+          <p>Caricando i pensieri di Antonio...</p>
+        </div>
+      </div>
+
+      <!-- Sezione Post Singolo -->
+      <div id="single-post-view">
+        <div class="back-to-list" id="back-button">← Tutti i post</div>
+        <article id="full-post-content">
+          <!-- Contenuto iniettato via JS -->
+        </article>
+      </div>
+    </div>
+
+    <footer class="footer">
+      © <span id="year"></span> O cantinho do Antonio.
+    </footer>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
+      authDomain: "cantinho-b2b09.firebaseapp.com",
+      projectId: "cantinho-b2b09",
+      storageBucket: "cantinho-b2b09.firebasestorage.app",
+      messagingSenderId: "1035287669836",
+      appId: "1:1035287669836:web:a64eed7bae8a5aa31998e9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const postsContainer = document.getElementById('blog-posts-container');
+    const listView = document.getElementById('posts-list-view');
+    const singleView = document.getElementById('single-post-view');
+    const fullPostContent = document.getElementById('full-post-content');
+    const backBtn = document.getElementById('back-button');
+
+    // Imposta l'anno
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    async function loadPosts() {
+      try {
+        const q = query(collection(db, "posts"), orderBy("date", "desc"));
+        const snapshot = await getDocs(q);
+        
+        postsContainer.innerHTML = '';
+        
+        if (snapshot.empty) {
+          postsContainer.innerHTML = '<p>Ancora nessun post. Torna presto!</p>';
+          return;
+        }
+
+        snapshot.forEach(docSnap => {
+          const post = docSnap.data();
+          const id = docSnap.id;
+          const date = new Date(post.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+          
+          const postEl = document.createElement('div');
+          postEl.className = 'featured-post';
+          postEl.innerHTML = `
+            <div class="post-image-wrapper">
+              <img src="${post.imageUrl || 'Icons-App/cantinho.png'}" alt="${post.title}">
+            </div>
+            <div class="post-content-preview">
+              <div class="post-meta-info">
+                <span>📅 ${date}</span>
+                <span>👤 Antonio</span>
+              </div>
+              <h2 onclick="window.showPost('${id}')">${post.title}</h2>
+              <div class="post-excerpt">${post.content.substring(0, 180)}...</div>
+              <a href="#" class="read-full-post" onclick="window.showPost('${id}'); return false;">Leggi di più →</a>
+            </div>
+          `;
+          postsContainer.appendChild(postEl);
+        });
+      } catch (e) {
+        console.error(e);
+        postsContainer.innerHTML = '<p>Errore nel caricamento dei post.</p>';
+      }
+    }
+
+    window.showPost = async (id) => {
+      listView.style.display = 'none';
+      singleView.style.display = 'block';
+      window.scrollTo(0,0);
+      
+      fullPostContent.innerHTML = '<p>Caricamento post...</p>';
+      
+      try {
+        const postSnap = await getDoc(doc(db, "posts", id));
+        if (postSnap.exists()) {
+          const post = postSnap.data();
+          const date = new Date(post.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+          
+          fullPostContent.innerHTML = `
+            <header class="single-post-header">
+              <div class="post-meta-info">
+                <span>📅 ${date}</span>
+                <span>👤 Di Antonio</span>
+              </div>
+              <h1>${post.title}</h1>
+              ${post.imageUrl ? `<div class="post-image-wrapper" style="aspect-ratio: 21/9; margin-bottom: 30px;"><img src="${post.imageUrl}"></div>` : ''}
+            </header>
+            <div class="full-content">
+              ${post.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
+            </div>
+          `;
+        }
+      } catch (e) {
+        fullPostContent.innerHTML = '<p>Errore nel caricamento del contenuto.</p>';
+      }
+    };
+
+    backBtn.addEventListener('click', () => {
+      singleView.style.display = 'none';
+      listView.style.display = 'block';
+    });
+
+    loadPosts();
+  </script>
+</body>
+</html>
+
