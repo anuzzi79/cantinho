@@ -193,7 +193,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -265,6 +265,11 @@
       fullPostContent.innerHTML = '<p>Caricamento post...</p>';
       
       try {
+        // Incrementa visite
+        updateDoc(doc(db, "posts", id), {
+          views: increment(1)
+        }).catch(err => console.error("Errore increment visite:", err));
+
         const postSnap = await getDoc(doc(db, "posts", id));
         if (postSnap.exists()) {
           const post = postSnap.data();

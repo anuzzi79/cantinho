@@ -100,6 +100,20 @@
     .btn-action:hover { background: #e0e0e0; }
     .btn-delete:hover { background: #fee2e2; color: #dc2626; }
 
+    .view-badge {
+      background: #fdf2f2;
+      color: #d93025;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 10px;
+      border: 1px solid #fee2e2;
+    }
+
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-size: 0.9rem; margin-bottom: 5px; font-weight: 500; }
     .form-group input, .form-group textarea {
@@ -193,7 +207,10 @@
         card.innerHTML = `
           <div class="post-admin-info">
             <h3>${post.title}</h3>
-            <span>${date}</span>
+            <span>📅 ${date}</span>
+            <span class="view-badge">
+              👁️ ${post.views || 0} visite
+            </span>
           </div>
           <div class="post-admin-actions">
             <button class="btn-action" onclick="window.editPost('${id}')">✏️</button>
@@ -238,7 +255,11 @@
       if (id) {
         await updateDoc(doc(db, "posts", id), data);
       } else {
-        await addDoc(collection(db, "posts"), { ...data, date: new Date().toISOString() });
+        await addDoc(collection(db, "posts"), { 
+          ...data, 
+          date: new Date().toISOString(),
+          views: 0 
+        });
       }
       
       modal.style.display = 'none';
