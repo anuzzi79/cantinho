@@ -156,8 +156,15 @@
             <input type="text" id="post-title" required>
           </div>
           <div class="form-group">
-            <label>URL Immagine</label>
-            <input type="text" id="post-image-url" placeholder="https://...">
+            <label>Immagine del Post</label>
+            <div style="display: flex; gap: 15px; align-items: center;">
+              <button class="btn-new-post" type="button" style="background: #f0f0f0; color: #333; margin: 0; position: relative; overflow: hidden;">
+                <span>📁 Sfoglia...</span>
+                <input type="file" id="post-image-file" accept="image/*" style="position: absolute; inset: 0; opacity: 0; cursor: pointer;">
+              </button>
+              <img id="post-image-preview" src="" style="width: 80px; height: 45px; object-fit: cover; border-radius: 4px; display: none; border: 1px solid var(--border-soft);">
+              <input type="hidden" id="post-image-data">
+            </div>
           </div>
           <div class="form-group">
             <label>Contenuto</label>
@@ -191,6 +198,53 @@
     const postsList = document.getElementById('admin-posts-list');
     const modal = document.getElementById('post-modal');
     const postForm = document.getElementById('post-form');
+    const imageInput = document.getElementById('post-image-file');
+    const imagePreview = document.getElementById('post-image-preview');
+    const imageDataInput = document.getElementById('post-image-data');
+
+    // Gestione selezione immagine (Base64) con Compressione
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Mostra un feedback immediato
+        imagePreview.style.display = 'block';
+        imagePreview.src = "https://www.google.com/images/spin-32.gif"; // Spinner temporaneo
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const max = 1200; // Larghezza massima ottimale
+
+            if (width > max) {
+              height *= max / width;
+              width = max;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Comprimiamo in JPEG al 70% di qualità per stare abbondantemente sotto 1MB
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            
+            imageDataInput.value = compressedBase64;
+            imagePreview.src = compressedBase64;
+            imagePreview.style.display = 'block';
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7244/ingest/c10e896d-707d-424a-bb3a-030f88f21e86',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'blog-admin.html:227',message:'Compressione completata',data:{originalSize: file.size, compressedLength: compressedBase64.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+            // #endregion
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
     async function loadAdminPosts() {
       const q = query(collection(db, "posts"), orderBy("date", "desc"));
@@ -228,7 +282,13 @@
         const post = postDoc.data();
         document.getElementById('edit-post-id').value = id;
         document.getElementById('post-title').value = post.title;
-        document.getElementById('post-image-url').value = post.imageUrl || '';
+        imageDataInput.value = post.imageUrl || '';
+        if (post.imageUrl) {
+          imagePreview.src = post.imageUrl;
+          imagePreview.style.display = 'block';
+        } else {
+          imagePreview.style.display = 'none';
+        }
         document.getElementById('post-content').value = post.content;
         document.getElementById('modal-title').textContent = 'Modifica Post';
         modal.style.display = 'flex';
@@ -244,32 +304,53 @@
 
     postForm.onsubmit = async (e) => {
       e.preventDefault();
-      const id = document.getElementById('edit-post-id').value;
-      const data = {
-        title: document.getElementById('post-title').value,
-        imageUrl: document.getElementById('post-image-url').value || "Icons-App/cantinho.png",
-        content: document.getElementById('post-content').value,
-        date: id ? undefined : new Date().toISOString()
-      };
-
-      if (id) {
-        await updateDoc(doc(db, "posts", id), data);
-      } else {
-        await addDoc(collection(db, "posts"), { 
-          ...data, 
-          date: new Date().toISOString(),
-          views: 0 
-        });
-      }
       
-      modal.style.display = 'none';
-      postForm.reset();
-      loadAdminPosts();
+      const submitBtn = postForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Salvataggio in corso...";
+
+      const id = document.getElementById('edit-post-id').value;
+      const title = document.getElementById('post-title').value;
+      const content = document.getElementById('post-content').value;
+      const imageUrl = imageDataInput.value || "Icons-App/cantinho.png";
+
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/c10e896d-707d-424a-bb3a-030f88f21e86',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'blog-admin.html:247',message:'Inizio onsubmit postForm (FIXED)',data:{id, title, imageLength: imageUrl.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+
+      const data = { title, content, imageUrl };
+
+      try {
+        if (id) {
+          await updateDoc(doc(db, "posts", id), data);
+        } else {
+          await addDoc(collection(db, "posts"), { 
+            ...data, 
+            date: new Date().toISOString(),
+            views: 0 
+          });
+        }
+        
+        alert("Post salvato con successo!");
+        modal.style.display = 'none';
+        postForm.reset();
+        imagePreview.style.display = 'none';
+        loadAdminPosts();
+      } catch (error) {
+        console.error("Errore nel salvataggio del post:", error);
+        alert("Errore nel salvataggio del post: " + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     };
 
     document.getElementById('open-modal-btn').onclick = () => {
       document.getElementById('edit-post-id').value = '';
       postForm.reset();
+      imageDataInput.value = '';
+      imagePreview.style.display = 'none';
       document.getElementById('modal-title').textContent = 'Nuovo Post';
       modal.style.display = 'flex';
     };

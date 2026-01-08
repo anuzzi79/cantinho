@@ -10,3 +10,9 @@
 {"location":"settings.html:338","message":"Inizio attesa Firebase","data":{"db_exists":true},"timestamp":1767663735407,"sessionId":"debug-session","hypothesisId":"A"}
 {"location":"settings.html:354","message":"Tentativo addDoc","data":{"has_addDoc":true,"has_window_addDoc":true,"has_collection":true},"timestamp":1767663735407,"sessionId":"debug-session","hypothesisId":"C"}
 {"location":"settings.html:362","message":"Post pubblicato con successo","timestamp":1767663735647,"sessionId":"debug-session"}
+{"location":"blog-admin.html:183","message":"Selezione file immagine","data":{"name":"Screenshot 2026-01-07 221053.png","size":799783,"type":"image/png"},"timestamp":1767835029534,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"blog-admin.html:194","message":"FileReader caricato","data":{"base64_length":1066402},"timestamp":1767835029542,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"blog-admin.html:247","message":"Inizio onsubmit postForm (FIXED)","data":{"id":"bUOgajHr7TPVmH2IYF9t","title":"Sono Wolf e risolvo problemi","imageLength":1066402},"timestamp":1767835030814,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"blog-admin.html:227","message":"Compressione completata","data":{"originalSize":799783,"compressedLength":76783},"timestamp":1767835098044,"sessionId":"debug-session","hypothesisId":"F"}
+{"location":"blog-admin.html:247","message":"Inizio onsubmit postForm (FIXED)","data":{"id":"bUOgajHr7TPVmH2IYF9t","title":"Sono Wolf e risolvo problemi","imageLength":76783},"timestamp":1767835099035,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"blog-admin.html:247","message":"Inizio onsubmit postForm (FIXED)","data":{"id":"bUOgajHr7TPVmH2IYF9t","title":"Sono Wolf e risolvo problemi","imageLength":76783},"timestamp":1767835179833,"sessionId":"debug-session","hypothesisId":"A"}
