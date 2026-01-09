@@ -297,8 +297,14 @@
 
     window.deletePost = async (id) => {
       if (confirm('Sei sicuro di voler cancellare questo post?')) {
-        await deleteDoc(doc(db, "posts", id));
-        loadAdminPosts();
+        try {
+          await deleteDoc(doc(db, "posts", id));
+          alert("Post eliminato con successo!");
+          await loadAdminPosts();
+        } catch (error) {
+          console.error("Errore nella cancellazione:", error);
+          alert("Errore durante la cancellazione del post: " + error.message);
+        }
       }
     };
 
