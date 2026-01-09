@@ -21,6 +21,13 @@
       padding-bottom: 60px;
     }
 
+    .blog-header-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+    }
+
     .blog-hero {
       text-align: center;
       padding: 60px 20px;
@@ -155,25 +162,66 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    /* Lang Switcher Styles */
+    .lang-switcher {
+      display: flex;
+      gap: 12px;
+    }
+    .lang-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 0;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      overflow: hidden;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .lang-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .lang-btn:hover { opacity: 0.8; transform: scale(1.05); }
+    .lang-btn.active { 
+      opacity: 1; 
+      box-shadow: 0 0 0 2px var(--primary), 0 4px 8px rgba(0,0,0,0.2);
+      transform: scale(1.1);
+    }
+
   </style>
 </head>
 <body>
   <main class="page">
     <div class="blog-page-container">
-      <nav style="padding: 20px 0;">
+      <nav class="blog-header-nav">
         <a href="index.html" style="text-decoration: none; color: var(--text-muted);">← Voltar ao Cantinho</a>
+        
+        <div class="lang-switcher">
+            <button class="lang-btn active" id="btn-it" onclick="window.setLang('it')" title="Italiano">
+              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzIDIiPjxwYXRoIGZpbGw9IiMwMDkyNDYiIGQ9Ik0wIDBoMXYySDB6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEgMGgxdjJIMUMxeiIvPjxwYXRoIGZpbGw9IiNjZTJiMzciIGQ9Ik0yIDBoMXYySDJ6Ii8+PC9zdmc+" alt="IT">
+            </button>
+            <button class="lang-btn" id="btn-pt" onclick="window.setLang('pt')" title="Português">
+              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjAgNTA0Ij48cGF0aCBmaWxsPSIjMDA5YzNiIiBkPSJNMCAwaDcyMHY1MDRIMHoiLz48cGF0aCBmaWxsPSIjZmNjeDAwIiBkPSJNMzYwIDQyTDM4IDI1MmwzMjIgMjEwIDMyMi0yMTB6Ii8+PHBhdGggZmlsbD0iIzAwMjE3MyIgZD0iTTQ5MCAyNTJhMTMwIDEzMCAwIDEgMS0yNjAgMCAxMzAgMTMwIDAgMSAxIDI2MCAweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMzIgMjAwczYwLTE3IDg5IDU1bC0yMiA4cy0zMy0zNi02Ny02M3oiLz48L3N2Zz4=" alt="BR">
+            </button>
+        </div>
       </nav>
 
       <!-- Sezione Lista Post -->
       <div id="posts-list-view">
         <header class="blog-hero">
-          <h1>Il Diario di Antonio</h1>
-          <p>Pensieri, codice e avventure dal Cantinho.</p>
+          <h1 id="hero-title">Il Diario di Antonio</h1>
+          <p id="hero-subtitle">Pensieri, codice e avventure dal Cantinho.</p>
         </header>
 
         <div id="blog-posts-container" class="blog-posts-list">
           <!-- Caricamento post... -->
-          <p>Caricando i pensieri di Antonio...</p>
+          <p>Caricando...</p>
         </div>
       </div>
 
@@ -212,9 +260,46 @@
     const singleView = document.getElementById('single-post-view');
     const fullPostContent = document.getElementById('full-post-content');
     const backBtn = document.getElementById('back-button');
+    const heroTitle = document.getElementById('hero-title');
+    const heroSubtitle = document.getElementById('hero-subtitle');
 
     // Imposta l'anno
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Gestione Lingua
+    let currentLang = localStorage.getItem('blog_lang') || 'it';
+    
+    window.setLang = (lang) => {
+        currentLang = lang;
+        localStorage.setItem('blog_lang', lang);
+        updateLangUI();
+        loadPosts();
+        
+        // Se siamo in un post singolo, ricarichiamolo
+        if (singleView.style.display === 'block' && window.currentPostId) {
+            window.showPost(window.currentPostId);
+        }
+    };
+
+    function updateLangUI() {
+        // Bottoni
+        document.getElementById('btn-it').className = `lang-btn ${currentLang === 'it' ? 'active' : ''}`;
+        document.getElementById('btn-pt').className = `lang-btn ${currentLang === 'pt' ? 'active' : ''}`;
+
+        // Testi statici
+        if (currentLang === 'it') {
+            heroTitle.textContent = "Il Diario di Antonio";
+            heroSubtitle.textContent = "Avventure e architetture di un QA italobrasiliano";
+            backBtn.textContent = "← Tutti i post";
+        } else {
+            heroTitle.textContent = "O Diário do Antonio";
+            heroSubtitle.textContent = "Aventuras e arquiteturas de um QA ítalo-brasileiro";
+            backBtn.textContent = "← Todos os posts";
+        }
+    }
+
+    // Inizializza UI lingua
+    updateLangUI();
 
     async function loadPosts() {
       try {
@@ -224,83 +309,128 @@
         postsContainer.innerHTML = '';
         
         if (snapshot.empty) {
-          postsContainer.innerHTML = '<p>Ancora nessun post. Torna presto!</p>';
+          postsContainer.innerHTML = '<p>...</p>';
           return;
         }
 
         snapshot.forEach(docSnap => {
           const post = docSnap.data();
           const id = docSnap.id;
-          const date = new Date(post.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
           
+          // Estrazione contenuti in base alla lingua
+          let title, content;
+          if (currentLang === 'it') {
+              title = post.title_it || post.title;
+              content = post.content_it || post.content;
+          } else {
+              title = post.title_pt;
+              content = post.content_pt;
+          }
+
+          // Se manca il contenuto per la lingua selezionata, mostriamo fallback o saltiamo?
+          // Strategia: Se titolo manca, usiamo l'altro con tag, oppure nascondiamo.
+          // Qui: Nascondiamo se non c'è proprio nulla per la lingua scelta
+          if (!title) return; 
+
+          const locale = currentLang === 'it' ? 'it-IT' : 'pt-BR';
+          const date = new Date(post.date).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+          const readMoreText = currentLang === 'it' ? "Leggi di più →" : "Leia mais →";
+          const byText = currentLang === 'it' ? "Antonio" : "Antonio";
+
           const postEl = document.createElement('div');
           postEl.className = 'featured-post';
           postEl.innerHTML = `
             <div class="post-image-wrapper">
-              <img src="${post.imageUrl || 'Icons-App/cantinho.png'}" alt="${post.title}">
+              <img src="${post.imageUrl || 'Icons-App/cantinho.png'}" alt="${title}">
             </div>
             <div class="post-content-preview">
               <div class="post-meta-info">
                 <span>📅 ${date}</span>
-                <span>👤 Antonio</span>
+                <span>👤 ${byText}</span>
               </div>
-              <h2 onclick="window.showPost('${id}')">${post.title}</h2>
-              <div class="post-excerpt">${post.content.substring(0, 180)}...</div>
-              <a href="#" class="read-full-post" onclick="window.showPost('${id}'); return false;">Leggi di più →</a>
+              <h2 onclick="window.showPost('${id}')">${title}</h2>
+              <div class="post-excerpt">${content.substring(0, 180)}...</div>
+              <a href="#" class="read-full-post" onclick="window.showPost('${id}'); return false;">${readMoreText}</a>
             </div>
           `;
           postsContainer.appendChild(postEl);
         });
+
+        if (postsContainer.children.length === 0) {
+            postsContainer.innerHTML = currentLang === 'it' 
+                ? '<p>Nessun post disponibile in italiano.</p>' 
+                : '<p>Nenhum post disponível em português ainda.</p>';
+        }
+
       } catch (e) {
         console.error(e);
-        postsContainer.innerHTML = '<p>Errore nel caricamento dei post.</p>';
+        postsContainer.innerHTML = '<p>Error loading posts.</p>';
       }
     }
 
     window.showPost = async (id) => {
+      window.currentPostId = id; // Salviamo ID per refresh lingua
       listView.style.display = 'none';
       singleView.style.display = 'block';
       window.scrollTo(0,0);
       
-      fullPostContent.innerHTML = '<p>Caricamento post...</p>';
+      fullPostContent.innerHTML = '<p>Loading...</p>';
       
       try {
-        // Incrementa visite
+        // Incrementa visite (solo una volta per sessione magari? Ma ok semplice)
         updateDoc(doc(db, "posts", id), {
           views: increment(1)
-        }).catch(err => console.error("Errore increment visite:", err));
+        }).catch(err => console.error("Error view increment:", err));
 
         const postSnap = await getDoc(doc(db, "posts", id));
         if (postSnap.exists()) {
           const post = postSnap.data();
-          const date = new Date(post.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
           
+          let title, content;
+          if (currentLang === 'it') {
+              title = post.title_it || post.title;
+              content = post.content_it || post.content;
+          } else {
+              title = post.title_pt;
+              content = post.content_pt;
+          }
+
+          if (!title) {
+              // Fallback se cambiamo lingua mentre siamo nel post e non c'è traduzione
+              title = post.title_it || post.title || "Untitled";
+              content = (post.content_it || post.content || "") + "\n\n(Traduzione non disponibile)";
+          }
+
+          const locale = currentLang === 'it' ? 'it-IT' : 'pt-BR';
+          const date = new Date(post.date).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+          const byText = currentLang === 'it' ? "Di Antonio" : "Por Antonio";
+
           fullPostContent.innerHTML = `
             <header class="single-post-header">
               <div class="post-meta-info">
                 <span>📅 ${date}</span>
-                <span>👤 Di Antonio</span>
+                <span>👤 ${byText}</span>
               </div>
-              <h1>${post.title}</h1>
+              <h1>${title}</h1>
               ${post.imageUrl ? `<div class="post-image-wrapper" style="aspect-ratio: 21/9; margin-bottom: 30px;"><img src="${post.imageUrl}"></div>` : ''}
             </header>
             <div class="full-content">
-              ${post.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
+              ${content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
             </div>
           `;
         }
       } catch (e) {
-        fullPostContent.innerHTML = '<p>Errore nel caricamento del contenuto.</p>';
+        fullPostContent.innerHTML = '<p>Error loading content.</p>';
       }
     };
 
     backBtn.addEventListener('click', () => {
       singleView.style.display = 'none';
       listView.style.display = 'block';
+      window.currentPostId = null;
     });
 
     loadPosts();
   </script>
 </body>
 </html>
-

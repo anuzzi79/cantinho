@@ -123,6 +123,46 @@
       border-radius: 8px;
       font-family: inherit;
     }
+
+    /* Flag Switch Styles */
+    .lang-switcher {
+      display: flex;
+      gap: 10px;
+      background: white;
+      padding: 5px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      margin-right: 15px;
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: opacity 0.2s, transform 0.2s;
+      padding: 0;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lang-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .lang-btn:hover { opacity: 0.7; }
+    .lang-btn.active {
+      opacity: 1;
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -133,7 +173,17 @@
       </nav>
 
       <div class="admin-header">
-        <h1>Gestione Diario</h1>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <h1>Gestione Diario</h1>
+          <div class="lang-switcher">
+            <button class="lang-btn active" id="lang-it" title="Italiano">
+              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzIDIiPjxwYXRoIGZpbGw9IiMwMDkyNDYiIGQ9Ik0wIDBoMXYySDB6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEgMGgxdjJIMUMxeiIvPjxwYXRoIGZpbGw9IiNjZTJiMzciIGQ9Ik0yIDBoMXYySDJ6Ii8+PC9zdmc+" alt="IT">
+            </button>
+            <button class="lang-btn" id="lang-pt" title="Português">
+              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjAgNTA0Ij48cGF0aCBmaWxsPSIjMDA5YzNiIiBkPSJNMCAwaDcyMHY1MDRIMHoiLz48cGF0aCBmaWxsPSIjZmNjeDAwIiBkPSJNMzYwIDQyTDM4IDI1MmwzMjIgMjEwIDMyMi0yMTB6Ii8+PHBhdGggZmlsbD0iIzAwMjE3MyIgZD0iTTQ5MCAyNTJhMTMwIDEzMCAwIDEgMS0yNjAgMCAxMzAgMTMwIDAgMSAxIDI2MCAweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMzIgMjAwczYwLTE3IDg5IDU1bC0yMiA4cy0zMy0zNi02Ny02M3oiLz48L3N2Zz4=" alt="BR">
+            </button>
+          </div>
+        </div>
         <button class="btn-new-post" id="open-modal-btn">
           <span>+</span> Nuovo Post
         </button>
@@ -149,14 +199,17 @@
     <div id="post-modal" class="modal">
       <div class="modal-content">
         <h2 id="modal-title">Nuovo Post</h2>
-        <form id="post-form" style="margin-top: 20px;">
+        <div style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted);">
+          Lingua selezionata: <span id="modal-lang-label" style="font-weight: bold;">🇮🇹 Italiano</span>
+        </div>
+        <form id="post-form">
           <input type="hidden" id="edit-post-id">
           <div class="form-group">
             <label>Titolo</label>
             <input type="text" id="post-title" required>
           </div>
           <div class="form-group">
-            <label>Immagine del Post</label>
+            <label>Immagine del Post (Condivisa)</label>
             <div style="display: flex; gap: 15px; align-items: center;">
               <button class="btn-new-post" type="button" style="background: #f0f0f0; color: #333; margin: 0; position: relative; overflow: hidden;">
                 <span>📁 Sfoglia...</span>
@@ -181,7 +234,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -201,14 +254,41 @@
     const imageInput = document.getElementById('post-image-file');
     const imagePreview = document.getElementById('post-image-preview');
     const imageDataInput = document.getElementById('post-image-data');
+    
+    // Gestione Lingua
+    let currentLang = 'it'; // 'it' o 'pt'
+    const btnIt = document.getElementById('lang-it');
+    const btnPt = document.getElementById('lang-pt');
+    const modalLangLabel = document.getElementById('modal-lang-label');
+
+    btnIt.onclick = () => switchLang('it');
+    btnPt.onclick = () => switchLang('pt');
+
+    function switchLang(lang) {
+      currentLang = lang;
+      
+      // Update UI Buttons
+      if (lang === 'it') {
+        btnIt.classList.add('active');
+        btnPt.classList.remove('active');
+        modalLangLabel.textContent = '🇮🇹 Italiano';
+        document.body.style.backgroundColor = ''; // Reset
+      } else {
+        btnPt.classList.add('active');
+        btnIt.classList.remove('active');
+        modalLangLabel.textContent = '🇧🇷 Português';
+        document.body.style.backgroundColor = '#eafaf1'; // Verdino chiarissimo
+      }
+
+      loadAdminPosts();
+    }
 
     // Gestione selezione immagine (Base64) con Compressione
     imageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
-        // Mostra un feedback immediato
         imagePreview.style.display = 'block';
-        imagePreview.src = "https://www.google.com/images/spin-32.gif"; // Spinner temporaneo
+        imagePreview.src = "https://www.google.com/images/spin-32.gif";
 
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -217,7 +297,7 @@
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const max = 1200; // Larghezza massima ottimale
+            const max = 1200;
 
             if (width > max) {
               height *= max / width;
@@ -229,16 +309,11 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Comprimiamo in JPEG al 70% di qualità per stare abbondantemente sotto 1MB
             const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
             
             imageDataInput.value = compressedBase64;
             imagePreview.src = compressedBase64;
             imagePreview.style.display = 'block';
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/c10e896d-707d-424a-bb3a-030f88f21e86',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'blog-admin.html:227',message:'Compressione completata',data:{originalSize: file.size, compressedLength: compressedBase64.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-            // #endregion
           };
           img.src = event.target.result;
         };
@@ -255,12 +330,34 @@
         const post = docSnap.data();
         const id = docSnap.id;
         const date = new Date(post.date).toLocaleDateString();
+        
+        // Logica titolo in base alla lingua
+        let displayTitle = '';
+        let isMissing = false;
+
+        if (currentLang === 'it') {
+          // Retrocompatibilità: usa post.title se esiste, altrimenti post.title_it
+          displayTitle = post.title_it || post.title;
+          if (!displayTitle) {
+             displayTitle = "(Titolo in italiano mancante)";
+             isMissing = true;
+          }
+        } else {
+          // Versione PT
+          displayTitle = post.title_pt;
+          if (!displayTitle) {
+             displayTitle = "(Titolo in PT brasil)";
+             isMissing = true;
+          }
+        }
+
+        const titleStyle = isMissing ? 'color: #999; font-style: italic;' : '';
 
         const card = document.createElement('div');
         card.className = 'post-admin-card';
         card.innerHTML = `
           <div class="post-admin-info">
-            <h3>${post.title}</h3>
+            <h3 style="${titleStyle}">${displayTitle}</h3>
             <span>📅 ${date}</span>
             <span class="view-badge">
               👁️ ${post.views || 0} visite
@@ -276,12 +373,23 @@
     }
 
     window.editPost = async (id) => {
-      const snapshot = await getDocs(query(collection(db, "posts")));
-      const postDoc = snapshot.docs.find(d => d.id === id);
-      if (postDoc) {
-        const post = postDoc.data();
+      const docRef = doc(db, "posts", id);
+      const postSnap = await getDoc(docRef);
+      
+      if (postSnap.exists()) {
+        const post = postSnap.data();
         document.getElementById('edit-post-id').value = id;
-        document.getElementById('post-title').value = post.title;
+        
+        // Carica campi in base alla lingua corrente
+        if (currentLang === 'it') {
+           document.getElementById('post-title').value = post.title_it || post.title || '';
+           document.getElementById('post-content').value = post.content_it || post.content || '';
+        } else {
+           document.getElementById('post-title').value = post.title_pt || '';
+           document.getElementById('post-content').value = post.content_pt || '';
+        }
+
+        // Immagine è condivisa
         imageDataInput.value = post.imageUrl || '';
         if (post.imageUrl) {
           imagePreview.src = post.imageUrl;
@@ -289,14 +397,19 @@
         } else {
           imagePreview.style.display = 'none';
         }
-        document.getElementById('post-content').value = post.content;
-        document.getElementById('modal-title').textContent = 'Modifica Post';
+
+        document.getElementById('modal-title').textContent = isPostNew(post) ? 'Nuovo Post' : 'Modifica Post';
         modal.style.display = 'flex';
       }
     };
 
+    function isPostNew(post) {
+       if (currentLang === 'it') return !(post.title_it || post.title);
+       return !post.title_pt;
+    }
+
     window.deletePost = async (id) => {
-      if (confirm('Sei sicuro di voler cancellare questo post?')) {
+      if (confirm('Sei sicuro di voler cancellare questo post? Verranno eliminate TUTTE le versioni (IT e PT).')) {
         try {
           await deleteDoc(doc(db, "posts", id));
           alert("Post eliminato con successo!");
@@ -317,22 +430,34 @@
       submitBtn.textContent = "Salvataggio in corso...";
 
       const id = document.getElementById('edit-post-id').value;
-      const title = document.getElementById('post-title').value;
-      const content = document.getElementById('post-content').value;
+      const titleVal = document.getElementById('post-title').value;
+      const contentVal = document.getElementById('post-content').value;
       const imageUrl = imageDataInput.value || "Icons-App/cantinho.png";
 
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/c10e896d-707d-424a-bb3a-030f88f21e86',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'blog-admin.html:247',message:'Inizio onsubmit postForm (FIXED)',data:{id, title, imageLength: imageUrl.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-
-      const data = { title, content, imageUrl };
+      // Costruiamo l'oggetto aggiornamento dinamico
+      const updateData = {};
+      
+      // Immagine e data sempre aggiornate/preservate
+      updateData.imageUrl = imageUrl;
+      
+      if (currentLang === 'it') {
+         updateData.title_it = titleVal;
+         updateData.content_it = contentVal;
+         // Aggiorniamo anche i campi legacy per sicurezza/fallback
+         updateData.title = titleVal;
+         updateData.content = contentVal;
+      } else {
+         updateData.title_pt = titleVal;
+         updateData.content_pt = contentVal;
+      }
 
       try {
         if (id) {
-          await updateDoc(doc(db, "posts", id), data);
+          await updateDoc(doc(db, "posts", id), updateData);
         } else {
+          // Nuovo post: crea con data e views
           await addDoc(collection(db, "posts"), { 
-            ...data, 
+            ...updateData, 
             date: new Date().toISOString(),
             views: 0 
           });
@@ -367,4 +492,3 @@
   </script>
 </body>
 </html>
-
