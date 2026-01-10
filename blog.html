@@ -241,7 +241,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, updateDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -265,6 +265,39 @@
 
     // Imposta l'anno
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // TRACKING GEOGRAFICO (Nuova Funzione)
+    async function trackVisit() {
+        // Controlla se abbiamo già tracciato questa sessione per non spammare il DB
+        const sessionTracked = sessionStorage.getItem('geo_tracked');
+        if (sessionTracked) return;
+
+        try {
+            // 1. Ottieni il codice paese (IP Geolocation) - Alternativa HTTPS sicura
+            const response = await fetch('https://api.country.is');
+            const data = await response.json();
+            const countryCode = data.country; // Restituisce "IT", "BR", etc.
+
+            if (countryCode) {
+                // 2. Incrementa il contatore su Firebase (stats/locations)
+                // Usiamo setDoc con merge per creare il documento se non esiste
+                const statsRef = doc(db, "stats", "locations");
+                await setDoc(statsRef, {
+                    [countryCode]: increment(1)
+                }, { merge: true });
+
+                console.log(`Visita tracciata da: ${countryCode}`);
+                sessionStorage.setItem('geo_tracked', 'true');
+            }
+        } catch (error) {
+            console.error("Errore tracking geo:", error);
+            // Fallisce silenziosamente, non rovina l'esperienza utente
+        }
+    }
+
+    // Avvia tracking
+    trackVisit();
+
 
     // Gestione Lingua
     let currentLang = localStorage.getItem('blog_lang') || 'it';
