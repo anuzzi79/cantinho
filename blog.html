@@ -448,7 +448,15 @@
               ${post.imageUrl ? `<div class="post-image-wrapper" style="aspect-ratio: 21/9; margin-bottom: 30px;"><img src="${post.imageUrl}"></div>` : ''}
             </header>
             <div class="full-content">
-              ${content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
+              ${content.split('\n').map(p => {
+                  if (!p.trim()) return '';
+                  // Linkify: trasforma URL in <a>
+                  const linkedP = p.replace(
+                      /(https?:\/\/[^\s]+)/g, 
+                      '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>'
+                  );
+                  return `<p>${linkedP}</p>`;
+              }).join('')}
             </div>
           `;
         }
