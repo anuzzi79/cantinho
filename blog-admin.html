@@ -14,6 +14,46 @@
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
   <style>
+    /* Overlay Login */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: #f8f9fa;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-box h2 { margin-bottom: 20px; color: var(--text-main); }
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .login-box button:hover { background: var(--primary-dark); }
+    #admin-content { display: none; } /* Nascosto di default */
+
     .admin-container {
       max-width: 1000px;
       margin: 40px auto;
@@ -196,40 +236,57 @@
 </head>
 <body>
   <main class="page">
-    <div class="admin-container">
-      <nav style="margin-bottom: 20px;">
-        <a href="settings.html" style="text-decoration: none; color: var(--text-muted);">← Torna a Settings</a>
-      </nav>
-
-      <div class="stats-container">
-        <div class="stats-header">
-           🌍 Provenienza Visitatori
-        </div>
-        <div id="regions_div">
-           <p style="color: #999; padding: 20px; text-align: center;">Caricamento mappa...</p>
-        </div>
+    <!-- LOGIN FORM -->
+    <div id="login-overlay">
+      <div class="login-box">
+        <h2>🔒 Accesso Admin</h2>
+        <form id="login-form">
+          <input type="email" id="email" placeholder="Email" required>
+          <input type="password" id="password" placeholder="Password" required>
+          <button type="submit">Entra</button>
+        </form>
+        <p id="login-error" style="color: red; margin-top: 10px; display: none;"></p>
       </div>
+    </div>
 
-      <div class="admin-header">
-        <div style="display: flex; align-items: center; gap: 20px;">
-          <h1>Gestione Diario</h1>
-          <div class="lang-switcher">
-            <button class="lang-btn active" id="lang-it" title="Italiano">
-              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzIDIiPjxwYXRoIGZpbGw9IiMwMDkyNDYiIGQ9Ik0wIDBoMXYySDB6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEgMGgxdjJIMUMxeiIvPjxwYXRoIGZpbGw9IiNjZTJiMzciIGQ9Ik0yIDBoMXYySDJ6Ii8+PC9zdmc+" alt="IT">
-            </button>
-            <button class="lang-btn" id="lang-pt" title="Português">
-              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjAgNTA0Ij48cGF0aCBmaWxsPSIjMDA5YzNiIiBkPSJNMCAwaDcyMHY1MDRIMHoiLz48cGF0aCBmaWxsPSIjZmNjeDAwIiBkPSJNMzYwIDQyTDM4IDI1MmwzMjIgMjEwIDMyMi0yMTB6Ii8+PHBhdGggZmlsbD0iIzAwMjE3MyIgZD0iTTQ5MCAyNTJhMTMwIDEzMCAwIDEgMS0yNjAgMCAxMzAgMTMwIDAgMSAxIDI2MCAweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMzIgMjAwczYwLTE3IDg5IDU1bC0yMiA4cy0zMy0zNi02Ny02M3oiLz48L3N2Zz4=" alt="BR">
-            </button>
+    <!-- CONTENUTO ADMIN (Protetto) -->
+    <div id="admin-content">
+      <div class="admin-container">
+        <nav style="margin-bottom: 20px; display: flex; justify-content: space-between;">
+          <a href="settings.html" style="text-decoration: none; color: var(--text-muted);">← Torna a Settings</a>
+          <button id="btn-logout" style="border:none; background:none; cursor:pointer; color: var(--text-muted);">Esci</button>
+        </nav>
+
+        <div class="stats-container">
+          <div class="stats-header">
+             🌍 Provenienza Visitatori
+          </div>
+          <div id="regions_div">
+             <p style="color: #999; padding: 20px; text-align: center;">Caricamento mappa...</p>
           </div>
         </div>
-        <button class="btn-new-post" id="open-modal-btn">
-          <span>+</span> Nuovo Post
-        </button>
-      </div>
 
-      <div id="admin-posts-list" class="posts-admin-list">
-        <!-- Post carichi qui -->
-        <p>Caricamento post...</p>
+        <div class="admin-header">
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <h1>Gestione Diario</h1>
+            <div class="lang-switcher">
+              <button class="lang-btn active" id="lang-it" title="Italiano">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzIDIiPjxwYXRoIGZpbGw9IiMwMDkyNDYiIGQ9Ik0wIDBoMXYySDB6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEgMGgxdjJIMUMxeiIvPjxwYXRoIGZpbGw9IiNjZTJiMzciIGQ9Ik0yIDBoMXYySDJ6Ii8+PC9zdmc+" alt="IT">
+              </button>
+              <button class="lang-btn" id="lang-pt" title="Português">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjAgNTA0Ij48cGF0aCBmaWxsPSIjMDA5YzNiIiBkPSJNMCAwaDcyMHY1MDRIMHoiLz48cGF0aCBmaWxsPSIjZmNjeDAwIiBkPSJNMzYwIDQyTDM4IDI1MmwzMjIgMjEwIDMyMi0yMTB6Ii8+PHBhdGggZmlsbD0iIzAwMjE3MyIgZD0iTTQ5MCAyNTJhMTMwIDEzMCAwIDEgMS0yNjAgMCAxMzAgMTMwIDAgMSAxIDI2MCAweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMzIgMjAwczYwLTE3IDg5IDU1bC0yMiA4cy0zMy0zNi02Ny02M3oiLz48L3N2Zz4=" alt="BR">
+              </button>
+            </div>
+          </div>
+          <button class="btn-new-post" id="open-modal-btn">
+            <span>+</span> Nuovo Post
+          </button>
+        </div>
+
+        <div id="admin-posts-list" class="posts-admin-list">
+          <!-- Post carichi qui -->
+          <p>Caricamento post...</p>
+        </div>
       </div>
     </div>
 
@@ -245,6 +302,10 @@
           <div class="form-group">
             <label>Titolo</label>
             <input type="text" id="post-title" required>
+          </div>
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="post-date">
           </div>
           <div class="form-group">
             <label>Immagine del Post (Condivisa)</label>
@@ -273,6 +334,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -285,6 +347,49 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // LOGIN LOGIC
+    const loginOverlay = document.getElementById('login-overlay');
+    const adminContent = document.getElementById('admin-content');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const btnLogout = document.getElementById('btn-logout');
+
+    // Controlla stato auth
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Loggato
+        loginOverlay.style.display = 'none';
+        adminContent.style.display = 'block';
+        loadAdminPosts();
+        // Carica mappa solo se loggato
+        google.charts.load('current', {'packages':['geochart']});
+        google.charts.setOnLoadCallback(drawRegionsMap);
+      } else {
+        // Non loggato
+        loginOverlay.style.display = 'flex';
+        adminContent.style.display = 'none';
+      }
+    });
+
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      loginError.style.display = 'none';
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        console.error(error);
+        loginError.textContent = "Email o password errati.";
+        loginError.style.display = 'block';
+      }
+    };
+
+    btnLogout.onclick = () => signOut(auth);
+
 
     const postsList = document.getElementById('admin-posts-list');
     const modal = document.getElementById('post-modal');
@@ -359,13 +464,6 @@
       }
     });
 
-    // MAPPA GOOGLE CHARTS
-    google.charts.load('current', {
-      'packages':['geochart']
-    });
-    
-    google.charts.setOnLoadCallback(drawRegionsMap);
-
     async function drawRegionsMap() {
       // 1. Recupera dati da Firebase
       try {
@@ -408,6 +506,9 @@
 
 
     async function loadAdminPosts() {
+      // Carica solo se loggato (doppio check)
+      if (!auth.currentUser) return;
+
       const q = query(collection(db, "posts"), orderBy("date", "desc"));
       const snapshot = await getDocs(q);
       postsList.innerHTML = '';
@@ -415,7 +516,7 @@
       snapshot.forEach(docSnap => {
         const post = docSnap.data();
         const id = docSnap.id;
-        const date = new Date(post.date).toLocaleDateString();
+        const date = new Date(post.date).toLocaleDateString('it-IT');
         
         // Logica titolo in base alla lingua
         let displayTitle = '';
@@ -474,6 +575,18 @@
            document.getElementById('post-title').value = post.title_pt || '';
            document.getElementById('post-content').value = post.content_pt || '';
         }
+        
+        // Data (formato YYYY-MM-DD per input date)
+        if (post.date) {
+            const d = new Date(post.date);
+            // Crea stringa YYYY-MM-DD locale (per non sballare col fuso orario)
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            document.getElementById('post-date').value = `${yyyy}-${mm}-${dd}`;
+        } else {
+            document.getElementById('post-date').value = '';
+        }
 
         // Immagine è condivisa
         imageDataInput.value = post.imageUrl || '';
@@ -518,13 +631,32 @@
       const id = document.getElementById('edit-post-id').value;
       const titleVal = document.getElementById('post-title').value;
       const contentVal = document.getElementById('post-content').value;
+      const dateVal = document.getElementById('post-date').value; // YYYY-MM-DD
       const imageUrl = imageDataInput.value || "Icons-App/cantinho.png";
 
       // Costruiamo l'oggetto aggiornamento dinamico
       const updateData = {};
       
-      // Immagine e data sempre aggiornate/preservate
+      // Immagine sempre aggiornata
       updateData.imageUrl = imageUrl;
+      
+      // Gestione Data (Fix Timezone Bug - Definitive)
+      // Usiamo costruttore esplicito (anno, mese, giorno) per evitare ambiguità UTC/Locale
+      if (dateVal) {
+          const parts = dateVal.split('-'); // es "2026-01-11"
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1; // Mesi JS sono 0-11
+          const day = parseInt(parts[2], 10);
+          
+          // Crea data LOCALE alle 12:00:00
+          const d = new Date(year, month, day, 12, 0, 0);
+          updateData.date = d.toISOString();
+      } else if (!id) {
+          // Nuovo post senza data specifica -> oggi mezzogiorno
+          const d = new Date();
+          d.setHours(12, 0, 0, 0);
+          updateData.date = d.toISOString();
+      }
       
       if (currentLang === 'it') {
          updateData.title_it = titleVal;
@@ -542,9 +674,11 @@
           await updateDoc(doc(db, "posts", id), updateData);
         } else {
           // Nuovo post: crea con data e views
+          // Se date non era settata nell'updateData (caso nuovo post senza input data), la mettiamo ora
+          if (!updateData.date) updateData.date = new Date().toISOString();
+          
           await addDoc(collection(db, "posts"), { 
             ...updateData, 
-            date: new Date().toISOString(),
             views: 0 
           });
         }
@@ -566,6 +700,14 @@
     document.getElementById('open-modal-btn').onclick = () => {
       document.getElementById('edit-post-id').value = '';
       postForm.reset();
+      
+      // Imposta data di oggi come default per nuovi post
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('post-date').value = `${yyyy}-${mm}-${dd}`;
+
       imageDataInput.value = '';
       imagePreview.style.display = 'none';
       document.getElementById('modal-title').textContent = 'Nuovo Post';
@@ -574,7 +716,8 @@
 
     document.getElementById('close-modal-btn').onclick = () => modal.style.display = 'none';
     
-    loadAdminPosts();
+    // Non carichiamo subito i post, aspettiamo auth
+    // loadAdminPosts(); 
   </script>
 </body>
 </html>
