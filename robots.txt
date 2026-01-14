@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /blog-admin.html
+Disallow: /settings.html
+
+Sitemap: https://anuzzi79.github.io/cantinho/sitemap.xml

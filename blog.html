@@ -2,13 +2,53 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Blog do Antonio - O Cantinho</title>
+  <title>Il Diario di Antonio - Blog QA Engineer | O Cantinho</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Blog personale di Antonio Nuzzi, QA Engineer. Articoli su testing, automazione, architetture software e riflessioni tech tra Italia e Brasile." />
+  <meta name="keywords" content="Blog QA, Software Testing, Test Automation, Antonio Nuzzi, Quality Assurance, Tech Blog, Sviluppo Software, Italia Brasile" />
+  <meta name="author" content="Antonio Nuzzi" />
+  <meta name="robots" content="index, follow" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="blog">
+  <meta property="og:title" content="Il Diario di Antonio - Blog QA Engineer">
+  <meta property="og:description" content="Avventure e architetture di un QA italo-brasiliano. Articoli su testing, sviluppo e tech.">
+  <meta property="og:image" content="Antonio.png">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:locale:alternate" content="pt_BR">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Il Diario di Antonio - Blog QA">
+  <meta name="twitter:description" content="Blog personale di Antonio Nuzzi su testing, automazione e software.">
+  <meta name="twitter:image" content="Antonio.png">
+  
   <link rel="icon" href="Icons-App/cantinho.png" sizes="any">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  
+  <!-- Structured Data (JSON-LD) per Google -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Il Diario di Antonio",
+    "description": "Blog personale di Antonio Nuzzi, QA Engineer italo-brasiliano. Articoli su testing, automazione, architetture software.",
+    "author": {
+      "@type": "Person",
+      "name": "Antonio Nuzzi",
+      "jobTitle": "QA Engineer",
+      "nationality": ["Italian", "Brazilian"]
+    },
+    "inLanguage": ["it-IT", "pt-BR"],
+    "blogPost": []
+  }
+  </script>
+
   <style>
     :root {
       --blog-accent: #d93025;

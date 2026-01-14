@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- PRIORITÀ: BLOG (Contenuto dinamico, aggiornato frequentemente) -->
+  <url>
+    <loc>https://anuzzi79.github.io/cantinho/blog.html</loc>
+    <lastmod>2026-01-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Homepage (Portfolio statico) -->
+  <url>
+    <loc>https://anuzzi79.github.io/cantinho/</loc>
+    <lastmod>2026-01-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://anuzzi79.github.io/cantinho/index.html</loc>
+    <lastmod>2026-01-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
