@@ -342,8 +342,39 @@
     trackVisit();
 
 
-    // Gestione Lingua
-    let currentLang = localStorage.getItem('blog_lang') || 'it';
+    // Gestione Lingua con Auto-detect da IP
+    let currentLang = localStorage.getItem('blog_lang');
+    
+    // Se non c'è preferenza salvata, rileva dalla geolocalizzazione
+    if (!currentLang) {
+        await detectLanguageFromIP();
+    } else {
+        updateLangUI();
+    }
+    
+    async function detectLanguageFromIP() {
+        try {
+            const response = await fetch('https://api.country.is');
+            const data = await response.json();
+            const countryCode = data.country; // "BR", "IT", etc.
+            
+            // Se Brasile → PT, altrimenti → IT (default)
+            if (countryCode === 'BR') {
+                currentLang = 'pt';
+            } else {
+                currentLang = 'it'; // Italia e tutti gli altri
+            }
+            
+            localStorage.setItem('blog_lang', currentLang);
+            updateLangUI();
+        } catch (error) {
+            console.error('Errore rilevazione lingua:', error);
+            // Fallback: italiano
+            currentLang = 'it';
+            localStorage.setItem('blog_lang', currentLang);
+            updateLangUI();
+        }
+    }
     
     window.setLang = (lang) => {
         currentLang = lang;
@@ -373,9 +404,6 @@
             backBtn.textContent = "← Todos os posts";
         }
     }
-
-    // Inizializza UI lingua
-    updateLangUI();
 
     async function loadPosts() {
       try {
