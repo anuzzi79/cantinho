@@ -163,16 +163,152 @@
     .success-message.show {
       display: block;
     }
+
+    /* Login Modal Styles */
+    .login-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .login-modal.hidden {
+      display: none;
+    }
+
+    .login-box {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .login-box h2 {
+      color: var(--text-main);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      font-family: "Poppins", sans-serif;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .login-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .login-error {
+      color: #f44336;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      text-align: center;
+      display: none;
+    }
+
+    .login-error.show {
+      display: block;
+    }
+
+    .logout-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 16px;
+    }
+
+    .logout-btn:hover {
+      background: #d32f2f;
+    }
+
+    .user-info {
+      display: inline-block;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .settings-content {
+      display: none;
+    }
+
+    .settings-content.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
+  <!-- Login Modal -->
+  <div id="login-modal" class="login-modal">
+    <div class="login-box">
+      <h2>🔐 Admin Login</h2>
+      <input 
+        type="email" 
+        id="email-input" 
+        class="login-input" 
+        placeholder="Email"
+        autocomplete="email"
+      >
+      <input 
+        type="password" 
+        id="password-input" 
+        class="login-input" 
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+      <button id="login-btn" class="login-btn">Login</button>
+      <div id="login-error" class="login-error">Login failed. Please try again.</div>
+    </div>
+  </div>
+
   <main class="page">
     <div class="settings-page">
       <div class="settings-header">
         <h1 id="settings-title">Settings</h1>
-        <a href="index.html">← Torna alla pagina principale</a>
+        <div>
+          <a href="index.html">← Torna alla pagina principale</a>
+          <span class="user-info" id="user-info"></span>
+          <button id="logout-btn" class="logout-btn" style="display: none;">Logout</button>
+        </div>
       </div>
 
+      <div id="settings-content" class="settings-content">
       <div class="settings-section">
         <h2>Testo "O que tem de novo"</h2>
         <textarea 
@@ -238,6 +374,7 @@
       <div id="success-message" class="success-message">
         Impostazioni salvate con successo!
       </div>
+      </div><!-- end settings-content -->
     </div>
   </main>
 
@@ -245,6 +382,7 @@
     // Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
@@ -257,17 +395,104 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    // Esponi db globalmente
+    // Esponi db e auth globalmente
     window.db = db;
+    window.auth = auth;
     window.setDoc = setDoc;
     window.getDoc = getDoc;
     window.doc = doc;
     window.addDoc = addDoc;
     window.collection = collection;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
   </script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // ========================================
+      // AUTHENTICATION LOGIC
+      // ========================================
+      const loginModal = document.getElementById("login-modal");
+      const settingsContent = document.getElementById("settings-content");
+      const emailInput = document.getElementById("email-input");
+      const passwordInput = document.getElementById("password-input");
+      const loginBtn = document.getElementById("login-btn");
+      const loginError = document.getElementById("login-error");
+      const logoutBtn = document.getElementById("logout-btn");
+      const userInfo = document.getElementById("user-info");
+
+      // Check authentication state
+      async function checkAuthState() {
+        if (!window.auth || !window.onAuthStateChanged) {
+          setTimeout(checkAuthState, 100);
+          return;
+        }
+
+        onAuthStateChanged(window.auth, (user) => {
+          if (user) {
+            // User is logged in
+            loginModal.classList.add("hidden");
+            settingsContent.classList.add("show");
+            logoutBtn.style.display = "inline-block";
+            userInfo.textContent = `Logged in as: ${user.email}`;
+            loadSavedSettings();
+          } else {
+            // User is logged out
+            loginModal.classList.remove("hidden");
+            settingsContent.classList.remove("show");
+            logoutBtn.style.display = "none";
+            userInfo.textContent = "";
+          }
+        });
+      }
+
+      checkAuthState();
+
+      // Login button handler
+      loginBtn.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          loginError.textContent = "Please enter email and password.";
+          loginError.classList.add("show");
+          return;
+        }
+
+        try {
+          await signInWithEmailAndPassword(window.auth, email, password);
+          loginError.classList.remove("show");
+          emailInput.value = "";
+          passwordInput.value = "";
+        } catch (error) {
+          console.error("Login error:", error);
+          loginError.textContent = "Login failed. Please check your credentials.";
+          loginError.classList.add("show");
+        }
+      });
+
+      // Allow Enter key to login
+      passwordInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          loginBtn.click();
+        }
+      });
+
+      // Logout button handler
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(window.auth);
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+      });
+
+      // ========================================
+      // SETTINGS LOGIC (requires authentication)
+      // ========================================
+      
       // Carica contenuti salvati
       loadSavedSettings();
 
