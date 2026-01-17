@@ -420,6 +420,7 @@
         snapshot.forEach(docSnap => {
           const post = docSnap.data();
           const id = docSnap.id;
+          const slug = post.slug || id; // Usa slug se esiste, altrimenti ID per retrocompatibilità
           
           // Estrazione contenuti in base alla lingua
           let title, content;
@@ -452,9 +453,9 @@
                 <span>📅 ${date}</span>
                 <span>👤 ${byText}</span>
               </div>
-              <h2 onclick="window.showPost('${id}')">${title}</h2>
+              <h2 onclick="window.showPost('${slug}')">${title}</h2>
               <div class="post-excerpt">${content.substring(0, 180)}...</div>
-              <a href="#" class="read-full-post" onclick="window.showPost('${id}'); return false;">${readMoreText}</a>
+              <a href="#" class="read-full-post" onclick="window.showPost('${slug}'); return false;">${readMoreText}</a>
             </div>
           `;
           postsContainer.appendChild(postEl);
@@ -472,8 +473,33 @@
       }
     }
 
-    window.showPost = async (id) => {
-      window.currentPostId = id; // Salviamo ID per refresh lingua
+    // Funzione helper per trovare post per slug o ID
+    async function findPostBySlugOrId(slugOrId) {
+      // Prima prova a cercare per ID diretto
+      const directDoc = await getDoc(doc(db, "posts", slugOrId));
+      if (directDoc.exists()) {
+        return { id: directDoc.id, data: directDoc.data() };
+      }
+      
+      // Altrimenti cerca per slug
+      const q = query(collection(db, "posts"));
+      const snapshot = await getDocs(q);
+      
+      for (const docSnap of snapshot.docs) {
+        if (docSnap.data().slug === slugOrId) {
+          return { id: docSnap.id, data: docSnap.data() };
+        }
+      }
+      
+      return null;
+    }
+
+    window.showPost = async (slugOrId) => {
+      window.currentPostId = slugOrId; // Salviamo per refresh lingua
+      
+      // Aggiorna URL con lo slug
+      history.pushState({ postId: slugOrId }, '', `#${slugOrId}`);
+      
       listView.style.display = 'none';
       singleView.style.display = 'block';
       window.scrollTo(0,0);
@@ -481,14 +507,16 @@
       fullPostContent.innerHTML = '<p>Loading...</p>';
       
       try {
-        // Incrementa visite (solo una volta per sessione magari? Ma ok semplice)
-        updateDoc(doc(db, "posts", id), {
-          views: increment(1)
-        }).catch(err => console.error("Error view increment:", err));
-
-        const postSnap = await getDoc(doc(db, "posts", id));
-        if (postSnap.exists()) {
-          const post = postSnap.data();
+        const postResult = await findPostBySlugOrId(slugOrId);
+        
+        if (postResult) {
+          const post = postResult.data;
+          const id = postResult.id;
+          
+          // Incrementa visite
+          updateDoc(doc(db, "posts", id), {
+            views: increment(1)
+          }).catch(err => console.error("Error view increment:", err));
           
           let title, content;
           if (currentLang === 'it') {
@@ -530,19 +558,51 @@
               }).join('')}
             </div>
           `;
+        } else {
+          fullPostContent.innerHTML = '<p>Post not found.</p>';
         }
       } catch (e) {
+        console.error(e);
         fullPostContent.innerHTML = '<p>Error loading content.</p>';
       }
     };
 
     backBtn.addEventListener('click', () => {
+      // Rimuove l'hash dall'URL
+      history.pushState({}, '', 'blog.html');
+      
       singleView.style.display = 'none';
       listView.style.display = 'block';
       window.currentPostId = null;
     });
 
     loadPosts();
+
+    // Gestisce browser back/forward button
+    window.addEventListener('popstate', (event) => {
+      const hash = window.location.hash.substring(1); // Rimuove il #
+      
+      if (hash) {
+        // Se c'è un hash, mostra quel post
+        window.showPost(hash);
+      } else {
+        // Altrimenti torna alla lista
+        singleView.style.display = 'none';
+        listView.style.display = 'block';
+        window.currentPostId = null;
+      }
+    });
+
+    // Se c'è un hash nell'URL al caricamento, apri quel post
+    window.addEventListener('load', () => {
+      const hash = window.location.hash.substring(1); // Rimuove il #
+      if (hash) {
+        // Aspetta che i post siano caricati, poi apri il post
+        setTimeout(() => {
+          window.showPost(hash);
+        }, 500);
+      }
+    });
   </script>
 </body>
 </html>
