@@ -327,6 +327,30 @@
             <label>Contenuto</label>
             <textarea id="post-content" rows="8" required></textarea>
           </div>
+
+          <!-- HTML EMBED -->
+          <div class="form-group" style="border-top: 1px solid var(--border-soft); padding-top: 15px; margin-top: 5px;">
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+              <input type="checkbox" id="html-embed-toggle" style="width:16px;height:16px;cursor:pointer;">
+              <span>Includi blocco HTML (animazione, widget…)</span>
+            </label>
+          </div>
+          <div id="html-embed-group" style="display:none;">
+            <div class="form-group">
+              <label>Posizione rispetto al testo</label>
+              <div style="display:flex; gap:24px; margin-top:6px;">
+                <label style="cursor:pointer;"><input type="radio" name="html-pos" value="before" checked> Prima del testo</label>
+                <label style="cursor:pointer;"><input type="radio" name="html-pos" value="after"> Dopo il testo</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Codice HTML</label>
+              <textarea id="post-html-embed" rows="10"
+                style="font-family: monospace; font-size: 0.82rem; background:#f9f9f9;"
+                placeholder="Incolla qui il codice HTML del blocco (es. animazione)…"></textarea>
+            </div>
+          </div>
+
           <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button type="submit" class="save-btn" style="flex: 1; margin: 0;">Salva Post</button>
             <button type="button" id="close-modal-btn" class="btn-action" style="flex: 1;">Annulla</button>
@@ -629,6 +653,15 @@
         slugInput.value = slug;
         slugPreview.textContent = slug;
 
+        // HTML embed
+        resetHtmlEmbed();
+        if (post.html_embed) {
+          document.getElementById('post-html-embed').value = post.html_embed;
+          setHtmlEmbedPosition(post.html_embed_position || 'after');
+          htmlEmbedToggle.checked = true;
+          htmlEmbedGroup.style.display = 'block';
+        }
+
         document.getElementById('modal-title').textContent = isPostNew(post) ? 'Nuovo Post' : 'Modifica Post';
         modal.style.display = 'flex';
       }
@@ -666,15 +699,23 @@
       const dateVal = document.getElementById('post-date').value; // YYYY-MM-DD
       const imageUrl = imageDataInput.value || "Icons-App/cantinho.png";
       const slugVal = slugInput.value || generateSlug(titleVal); // Genera se manca
+      const htmlEmbedVal = htmlEmbedToggle.checked
+        ? document.getElementById('post-html-embed').value.trim()
+        : '';
+      const htmlEmbedPos = htmlEmbedToggle.checked ? getHtmlEmbedPosition() : 'after';
 
       // Costruiamo l'oggetto aggiornamento dinamico
       const updateData = {};
       
       // Immagine sempre aggiornata
       updateData.imageUrl = imageUrl;
-      
+
       // Slug sempre aggiornato
       updateData.slug = slugVal;
+
+      // HTML embed (condiviso tra lingue — è lo stesso blocco visuale)
+      updateData.html_embed = htmlEmbedVal;
+      updateData.html_embed_position = htmlEmbedPos;
       
       // Gestione Data (Fix Timezone Bug - Definitive)
       // Usiamo costruttore esplicito (anno, mese, giorno) per evitare ambiguità UTC/Locale
@@ -733,10 +774,32 @@
       }
     };
 
+    // HTML embed toggle
+    const htmlEmbedToggle = document.getElementById('html-embed-toggle');
+    const htmlEmbedGroup  = document.getElementById('html-embed-group');
+    htmlEmbedToggle.addEventListener('change', () => {
+      htmlEmbedGroup.style.display = htmlEmbedToggle.checked ? 'block' : 'none';
+    });
+
+    function getHtmlEmbedPosition() {
+      return document.querySelector('input[name="html-pos"]:checked')?.value || 'after';
+    }
+    function setHtmlEmbedPosition(val) {
+      const radio = document.querySelector(`input[name="html-pos"][value="${val}"]`);
+      if (radio) radio.checked = true;
+    }
+    function resetHtmlEmbed() {
+      htmlEmbedToggle.checked = false;
+      htmlEmbedGroup.style.display = 'none';
+      document.getElementById('post-html-embed').value = '';
+      setHtmlEmbedPosition('after');
+    }
+
     document.getElementById('open-modal-btn').onclick = () => {
       document.getElementById('edit-post-id').value = '';
       postForm.reset();
-      
+      resetHtmlEmbed();
+
       // Imposta data di oggi come default per nuovi post
       const today = new Date();
       const yyyy = today.getFullYear();

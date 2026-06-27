@@ -537,6 +537,20 @@
           const date = new Date(post.date).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
           const byText = currentLang === 'it' ? "Di Antonio" : "Por Antonio";
 
+          const textHtml = content.split('\n').map(p => {
+              if (!p.trim()) return '';
+              const linkedP = p.replace(
+                  /(https?:\/\/[^\s]+)/g,
+                  '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>'
+              );
+              return `<p>${linkedP}</p>`;
+          }).join('');
+
+          const embedHtml = post.html_embed
+            ? `<div class="post-html-embed" style="margin: 32px 0;">${post.html_embed}</div>`
+            : '';
+          const embedBefore = (post.html_embed_position || 'after') === 'before';
+
           fullPostContent.innerHTML = `
             <header class="single-post-header">
               <div class="post-meta-info">
@@ -547,15 +561,9 @@
               ${post.imageUrl ? `<div class="post-image-wrapper" style="aspect-ratio: 21/9; margin-bottom: 30px;"><img src="${post.imageUrl}"></div>` : ''}
             </header>
             <div class="full-content">
-              ${content.split('\n').map(p => {
-                  if (!p.trim()) return '';
-                  // Linkify: trasforma URL in <a>
-                  const linkedP = p.replace(
-                      /(https?:\/\/[^\s]+)/g, 
-                      '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>'
-                  );
-                  return `<p>${linkedP}</p>`;
-              }).join('')}
+              ${embedBefore ? embedHtml : ''}
+              ${textHtml}
+              ${!embedBefore ? embedHtml : ''}
             </div>
           `;
         } else {
