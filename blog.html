@@ -546,10 +546,10 @@
               return `<p>${linkedP}</p>`;
           }).join('');
 
-          const embedHtml = post.html_embed
-            ? `<div class="post-html-embed" style="margin: 32px 0;">${post.html_embed}</div>`
-            : '';
           const embedBefore = (post.html_embed_position || 'after') === 'before';
+          const embedPlaceholder = post.html_embed
+            ? '<div class="post-html-embed" style="margin: 32px 0;"></div>'
+            : '';
 
           fullPostContent.innerHTML = `
             <header class="single-post-header">
@@ -561,11 +561,18 @@
               ${post.imageUrl ? `<div class="post-image-wrapper" style="aspect-ratio: 21/9; margin-bottom: 30px;"><img src="${post.imageUrl}"></div>` : ''}
             </header>
             <div class="full-content">
-              ${embedBefore ? embedHtml : ''}
+              ${embedBefore ? embedPlaceholder : ''}
               ${textHtml}
-              ${!embedBefore ? embedHtml : ''}
+              ${!embedBefore ? embedPlaceholder : ''}
             </div>
           `;
+
+          // Inject embed via createContextualFragment so <script> tags execute
+          if (post.html_embed) {
+            const embedContainer = fullPostContent.querySelector('.post-html-embed');
+            const range = document.createRange();
+            embedContainer.appendChild(range.createContextualFragment(post.html_embed));
+          }
         } else {
           fullPostContent.innerHTML = '<p>Post not found.</p>';
         }
