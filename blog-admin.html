@@ -276,6 +276,9 @@
               <button class="lang-btn" id="lang-pt" title="Português">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjAgNTA0Ij48cGF0aCBmaWxsPSIjMDA5YzNiIiBkPSJNMCAwaDcyMHY1MDRIMHoiLz48cGF0aCBmaWxsPSIjZmNjeDAwIiBkPSJNMzYwIDQyTDM4IDI1MmwzMjIgMjEwIDMyMi0yMTB6Ii8+PHBhdGggZmlsbD0iIzAwMjE3MyIgZD0iTTQ5MCAyNTJhMTMwIDEzMCAwIDEgMS0yNjAgMCAxMzAgMTMwIDAgMSAxIDI2MCAweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMzIgMjAwczYwLTE3IDg5IDU1bC0yMiA4cy0zMy0zNi02Ny02M3oiLz48L3N2Zz4=" alt="BR">
               </button>
+              <button class="lang-btn" id="lang-en" title="English">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAzMCI+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwdjMwaDYwdi0zMHoiLz48L2NsaXBQYXRoPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHBhdGggZD0iTTAgMHYzMGg2MHYtMzB6IiBmaWxsPSIjMDEyMTY5Ii8+PHBhdGggZD0iTTAgMGw2MCAzMG0wLTMwTDAgMzAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PHBhdGggZD0iTTAgMGw2MCAzMG0wLTMwTDAgMzAiIHN0cm9rZT0iI2MzMDAzZCIgc3Ryb2tlLXdpZHRoPSI0IiBjbGlwLXBhdGg9InVybCgjcykiLz48cGF0aCBkPSJNMzAgMHYzME0wIDE1aDYwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMTAiLz48cGF0aCBkPSJNMzAgMHYzME0wIDE1aDYwIiBzdHJva2U9IiNjMzAwM2QiIHN0cm9rZS13aWR0aD0iNiIvPjwvZz48L3N2Zz4=" alt="EN">
+              </button>
             </div>
           </div>
           <button class="btn-new-post" id="open-modal-btn">
@@ -450,26 +453,31 @@
     });
     
     // Gestione Lingua
-    let currentLang = 'it'; // 'it' o 'pt'
+    let currentLang = 'it'; // 'it', 'pt' o 'en'
     const btnIt = document.getElementById('lang-it');
     const btnPt = document.getElementById('lang-pt');
+    const btnEn = document.getElementById('lang-en');
     const modalLangLabel = document.getElementById('modal-lang-label');
 
     btnIt.onclick = () => switchLang('it');
     btnPt.onclick = () => switchLang('pt');
+    btnEn.onclick = () => switchLang('en');
 
     function switchLang(lang) {
       currentLang = lang;
-      
+
       // Update UI Buttons
+      btnIt.classList.toggle('active', lang === 'it');
+      btnPt.classList.toggle('active', lang === 'pt');
+      btnEn.classList.toggle('active', lang === 'en');
+
       if (lang === 'it') {
-        btnIt.classList.add('active');
-        btnPt.classList.remove('active');
         modalLangLabel.textContent = '🇮🇹 Italiano';
         document.body.style.backgroundColor = ''; // Reset
+      } else if (lang === 'en') {
+        modalLangLabel.textContent = '🇬🇧 English';
+        document.body.style.backgroundColor = '#eaf1fa'; // Azzurrino chiarissimo
       } else {
-        btnPt.classList.add('active');
-        btnIt.classList.remove('active');
         modalLangLabel.textContent = '🇧🇷 Português';
         document.body.style.backgroundColor = '#eafaf1'; // Verdino chiarissimo
       }
@@ -580,6 +588,12 @@
              displayTitle = "(Titolo in italiano mancante)";
              isMissing = true;
           }
+        } else if (currentLang === 'en') {
+          displayTitle = post.title_en;
+          if (!displayTitle) {
+             displayTitle = "(Title missing in English)";
+             isMissing = true;
+          }
         } else {
           // Versione PT
           displayTitle = post.title_pt;
@@ -622,6 +636,9 @@
         if (currentLang === 'it') {
            document.getElementById('post-title').value = post.title_it || post.title || '';
            document.getElementById('post-content').value = post.content_it || post.content || '';
+        } else if (currentLang === 'en') {
+           document.getElementById('post-title').value = post.title_en || '';
+           document.getElementById('post-content').value = post.content_en || '';
         } else {
            document.getElementById('post-title').value = post.title_pt || '';
            document.getElementById('post-content').value = post.content_pt || '';
@@ -669,11 +686,12 @@
 
     function isPostNew(post) {
        if (currentLang === 'it') return !(post.title_it || post.title);
+       if (currentLang === 'en') return !post.title_en;
        return !post.title_pt;
     }
 
     window.deletePost = async (id) => {
-      if (confirm('Sei sicuro di voler cancellare questo post? Verranno eliminate TUTTE le versioni (IT e PT).')) {
+      if (confirm('Sei sicuro di voler cancellare questo post? Verranno eliminate TUTTE le versioni (IT, PT e EN).')) {
         try {
           await deleteDoc(doc(db, "posts", id));
           alert("Post eliminato con successo!");
@@ -741,6 +759,9 @@
          // Aggiorniamo anche i campi legacy per sicurezza/fallback
          updateData.title = titleVal;
          updateData.content = contentVal;
+      } else if (currentLang === 'en') {
+         updateData.title_en = titleVal;
+         updateData.content_en = contentVal;
       } else {
          updateData.title_pt = titleVal;
          updateData.content_pt = contentVal;

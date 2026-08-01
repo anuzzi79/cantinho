@@ -252,6 +252,9 @@
             <button class="lang-btn" id="btn-pt" onclick="window.setLang('pt')" title="Português">
               <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjAgNTA0Ij48cGF0aCBmaWxsPSIjMDA5YzNiIiBkPSJNMCAwaDcyMHY1MDRIMHoiLz48cGF0aCBmaWxsPSIjZmNjeDAwIiBkPSJNMzYwIDQyTDM4IDI1MmwzMjIgMjEwIDMyMi0yMTB6Ii8+PHBhdGggZmlsbD0iIzAwMjE3MyIgZD0iTTQ5MCAyNTJhMTMwIDEzMCAwIDEgMS0yNjAgMCAxMzAgMTMwIDAgMSAxIDI2MCAweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0zMzIgMjAwczYwLTE3IDg5IDU1bC0yMiA4cy0zMy0zNi02Ny02M3oiLz48L3N2Zz4=" alt="BR">
             </button>
+            <button class="lang-btn" id="btn-en" onclick="window.setLang('en')" title="English">
+              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAzMCI+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwdjMwaDYwdi0zMHoiLz48L2NsaXBQYXRoPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHBhdGggZD0iTTAgMHYzMGg2MHYtMzB6IiBmaWxsPSIjMDEyMTY5Ii8+PHBhdGggZD0iTTAgMGw2MCAzMG0wLTMwTDAgMzAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2Ii8+PHBhdGggZD0iTTAgMGw2MCAzMG0wLTMwTDAgMzAiIHN0cm9rZT0iI2MzMDAzZCIgc3Ryb2tlLXdpZHRoPSI0IiBjbGlwLXBhdGg9InVybCgjcykiLz48cGF0aCBkPSJNMzAgMHYzME0wIDE1aDYwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMTAiLz48cGF0aCBkPSJNMzAgMHYzME0wIDE1aDYwIiBzdHJva2U9IiNjMzAwM2QiIHN0cm9rZS13aWR0aD0iNiIvPjwvZz48L3N2Zz4=" alt="EN">
+            </button>
         </div>
       </nav>
 
@@ -392,12 +395,17 @@
         // Bottoni
         document.getElementById('btn-it').className = `lang-btn ${currentLang === 'it' ? 'active' : ''}`;
         document.getElementById('btn-pt').className = `lang-btn ${currentLang === 'pt' ? 'active' : ''}`;
+        document.getElementById('btn-en').className = `lang-btn ${currentLang === 'en' ? 'active' : ''}`;
 
         // Testi statici
         if (currentLang === 'it') {
             heroTitle.textContent = "Il Diario di Antonio";
             heroSubtitle.textContent = "Avventure e architetture di un QA italobrasiliano";
             backBtn.textContent = "← Tutti i post";
+        } else if (currentLang === 'en') {
+            heroTitle.textContent = "Antonio's Diary";
+            heroSubtitle.textContent = "Adventures and architectures of an Italian-Brazilian QA";
+            backBtn.textContent = "← All posts";
         } else {
             heroTitle.textContent = "O Diário do Antonio";
             heroSubtitle.textContent = "Aventuras e arquiteturas de um QA ítalo-brasileiro";
@@ -427,6 +435,9 @@
           if (currentLang === 'it') {
               title = post.title_it || post.title;
               content = post.content_it || post.content;
+          } else if (currentLang === 'en') {
+              title = post.title_en;
+              content = post.content_en;
           } else {
               title = post.title_pt;
               content = post.content_pt;
@@ -435,12 +446,12 @@
           // Se manca il contenuto per la lingua selezionata, mostriamo fallback o saltiamo?
           // Strategia: Se titolo manca, usiamo l'altro con tag, oppure nascondiamo.
           // Qui: Nascondiamo se non c'è proprio nulla per la lingua scelta
-          if (!title) return; 
+          if (!title) return;
 
-          const locale = currentLang === 'it' ? 'it-IT' : 'pt-BR';
+          const locale = currentLang === 'it' ? 'it-IT' : (currentLang === 'en' ? 'en-US' : 'pt-BR');
           const date = new Date(post.date).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
-          const readMoreText = currentLang === 'it' ? "Leggi di più →" : "Leia mais →";
-          const byText = currentLang === 'it' ? "Antonio" : "Antonio";
+          const readMoreText = currentLang === 'it' ? "Leggi di più →" : (currentLang === 'en' ? "Read more →" : "Leia mais →");
+          const byText = "Antonio";
 
           const postEl = document.createElement('div');
           postEl.className = 'featured-post';
@@ -462,8 +473,10 @@
         });
 
         if (postsContainer.children.length === 0) {
-            postsContainer.innerHTML = currentLang === 'it' 
-                ? '<p>Nessun post disponibile in italiano.</p>' 
+            postsContainer.innerHTML = currentLang === 'it'
+                ? '<p>Nessun post disponibile in italiano.</p>'
+                : currentLang === 'en'
+                ? '<p>No posts available in English yet.</p>'
                 : '<p>Nenhum post disponível em português ainda.</p>';
         }
 
@@ -522,6 +535,9 @@
           if (currentLang === 'it') {
               title = post.title_it || post.title;
               content = post.content_it || post.content;
+          } else if (currentLang === 'en') {
+              title = post.title_en;
+              content = post.content_en;
           } else {
               title = post.title_pt;
               content = post.content_pt;
@@ -530,12 +546,12 @@
           if (!title) {
               // Fallback se cambiamo lingua mentre siamo nel post e non c'è traduzione
               title = post.title_it || post.title || "Untitled";
-              content = (post.content_it || post.content || "") + "\n\n(Traduzione non disponibile)";
+              content = post.content_it || post.content || "";
           }
 
-          const locale = currentLang === 'it' ? 'it-IT' : 'pt-BR';
+          const locale = currentLang === 'it' ? 'it-IT' : (currentLang === 'en' ? 'en-US' : 'pt-BR');
           const date = new Date(post.date).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
-          const byText = currentLang === 'it' ? "Di Antonio" : "Por Antonio";
+          const byText = currentLang === 'it' ? "Di Antonio" : (currentLang === 'en' ? "By Antonio" : "Por Antonio");
 
           const textHtml = content.split('\n').map(p => {
               if (!p.trim()) return '';
