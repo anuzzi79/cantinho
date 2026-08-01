@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stats Admin - O Cantinho</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="Icons-App/cantinho.png" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: #f8f9fa;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-box h2 { margin-bottom: 20px; color: var(--text-main); }
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .login-box button:hover { background: var(--primary-dark); }
+    #admin-content { display: none; }
+
+    .admin-container {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .metric-card {
+      background: white;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .metric-card h3 { margin: 0 0 4px; font-size: 1.1rem; }
+    .metric-card .synced {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      align-items: end;
+    }
+    .metric-field label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .metric-field .raw-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .metric-field input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .metric-field .front-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #0f57fb;
+    }
+    .btn-save-metric {
+      margin-top: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-save-metric:hover { background: var(--primary-dark); }
+    .save-status {
+      font-size: 0.82rem;
+      margin-left: 12px;
+      color: #1a9c5c;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div id="login-overlay">
+      <div class="login-box">
+        <h2>🔒 Accesso Admin</h2>
+        <form id="login-form">
+          <input type="email" id="email" placeholder="Email" required>
+          <input type="password" id="password" placeholder="Password" required>
+          <button type="submit">Entra</button>
+        </form>
+        <p id="login-error" style="color: red; margin-top: 10px; display: none;"></p>
+      </div>
+    </div>
+
+    <div id="admin-content">
+      <div class="admin-container">
+        <nav style="margin-bottom: 20px; display: flex; justify-content: space-between;">
+          <a href="settings.html" style="text-decoration: none; color: var(--text-muted);">← Torna a Settings</a>
+          <button id="btn-logout" style="border:none; background:none; cursor:pointer; color: var(--text-muted);">Esci</button>
+        </nav>
+
+        <div class="admin-header">
+          <h1>Stats Antonionuzzi.com</h1>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: -20px; margin-bottom: 30px;">
+          Il valore <b>Raw</b> arriva da Jira/Xray. Il <b>Front</b> (Raw + Offset) è quello mostrato sul sito pubblico.
+        </p>
+
+        <div id="metrics-container"></div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdFk-2f8EBqepoRXC10yoASiBQ3gpMt4k",
+      authDomain: "cantinho-b2b09.firebaseapp.com",
+      projectId: "cantinho-b2b09",
+      storageBucket: "cantinho-b2b09.firebasestorage.app",
+      messagingSenderId: "1035287669836",
+      appId: "1:1035287669836:web:a64eed7bae8a5aa31998e9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const loginOverlay = document.getElementById('login-overlay');
+    const adminContent = document.getElementById('admin-content');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const btnLogout = document.getElementById('btn-logout');
+    const metricsContainer = document.getElementById('metrics-container');
+
+    const METRICS = [
+      { key: 'bugs', label: 'Bugs encontrados' },
+      { key: 'projects', label: 'Projetos' },
+      { key: 'testCases', label: 'Casos de Teste elaborados/executados' },
+    ];
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginOverlay.style.display = 'none';
+        adminContent.style.display = 'block';
+        loadMetrics();
+      } else {
+        loginOverlay.style.display = 'flex';
+        adminContent.style.display = 'none';
+      }
+    });
+
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      loginError.style.display = 'none';
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        loginError.textContent = "Email o password errati.";
+        loginError.style.display = 'block';
+      }
+    };
+
+    btnLogout.onclick = () => signOut(auth);
+
+    function fmtSynced(iso) {
+      if (!iso) return 'nunca sincronizado';
+      const d = new Date(iso);
+      return 'sincronizado em ' + d.toLocaleString('pt-BR');
+    }
+
+    async function loadMetrics() {
+      const docRef = doc(db, 'stats', 'counters');
+      const snap = await getDoc(docRef);
+      const data = snap.exists() ? snap.data() : {};
+
+      metricsContainer.innerHTML = '';
+      for (const m of METRICS) {
+        const entry = data[m.key] || { raw: 0, offset: 0, lastSynced: null };
+        const front = (entry.raw || 0) + (entry.offset || 0);
+
+        const card = document.createElement('div');
+        card.className = 'metric-card';
+        card.innerHTML = `
+          <h3>${m.label}</h3>
+          <div class="synced">${fmtSynced(entry.lastSynced)}</div>
+          <div class="metric-row">
+            <div class="metric-field">
+              <label>Raw (Jira/Xray)</label>
+              <div class="raw-value">${entry.raw || 0}</div>
+            </div>
+            <div class="metric-field">
+              <label>Offset manual</label>
+              <input type="number" class="offset-input" data-key="${m.key}" value="${entry.offset || 0}">
+            </div>
+            <div class="metric-field">
+              <label>Front (site público)</label>
+              <div class="front-value" id="front-${m.key}">${front}</div>
+            </div>
+          </div>
+          <button class="btn-save-metric" data-key="${m.key}" data-raw="${entry.raw || 0}">Salvar</button>
+          <span class="save-status" id="status-${m.key}"></span>
+        `;
+        metricsContainer.appendChild(card);
+      }
+
+      // Live preview do front ao digitar o offset
+      document.querySelectorAll('.offset-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const key = input.dataset.key;
+          const btn = document.querySelector(`.btn-save-metric[data-key="${key}"]`);
+          const raw = parseInt(btn.dataset.raw, 10) || 0;
+          const offset = parseInt(input.value, 10) || 0;
+          document.getElementById('front-' + key).textContent = raw + offset;
+        });
+      });
+
+      document.querySelectorAll('.btn-save-metric').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const key = btn.dataset.key;
+          const raw = parseInt(btn.dataset.raw, 10) || 0;
+          const input = document.querySelector(`.offset-input[data-key="${key}"]`);
+          const offset = parseInt(input.value, 10) || 0;
+          const front = raw + offset;
+          const statusEl = document.getElementById('status-' + key);
+          statusEl.textContent = 'Salvando...';
+          try {
+            const docRef = doc(db, 'stats', 'counters');
+            const snap = await getDoc(docRef);
+            const data = snap.exists() ? snap.data() : {};
+            data[key] = Object.assign({}, data[key], { offset, front });
+            await setDoc(docRef, data, { merge: true });
+            statusEl.textContent = 'Salvo ✓ (front = ' + front + ')';
+          } catch (err) {
+            statusEl.textContent = 'Erro: ' + err.message;
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
