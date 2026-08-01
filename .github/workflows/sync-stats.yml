@@ -2,9 +2,14 @@ name: Sync Stats from Jira/Xray
 
 on:
   schedule:
-    # 11:00 UTC = 08:00 America/Sao_Paulo (Brazil has had no DST since 2019, fixed UTC-3)
-    - cron: '0 11 * * *'
+    # 11:00 UTC Mon = 08:00 America/Sao_Paulo Mon (Brazil has had no DST since 2019, fixed UTC-3)
+    - cron: '0 11 * * 1'
+    # 18:00 UTC Wed = 15:00 America/Sao_Paulo Wed
+    - cron: '0 18 * * 3'
   workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   sync:
@@ -22,3 +27,10 @@ jobs:
           XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
           FIREBASE_PASSWORD: ${{ secrets.FIREBASE_PASSWORD }}
         run: node scripts/sync-stats.js
+      - name: Commit and push stats.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stats.json
+          git diff --staged --quiet || git commit -m "chore: update public stats.json [skip ci]"
+          git push

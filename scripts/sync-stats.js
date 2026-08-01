@@ -1,8 +1,15 @@
-// Daily sync: Jira/Xray -> Firestore stats/counters.{bugs,projects,testCases}.{raw,lastSynced}
-// Never touches .offset or .front — those stay under manual control via stats-admin.html.
+// Sync: Jira/Xray -> Firestore stats/counters.{bugs,projects,testCases}.{raw,lastSynced}
+// Never touches .offset (set manually via stats-admin.html).
+// Firestore no longer stores a .front field — front = raw + offset is computed here,
+// right before publishing, and written ONLY to the public static file (stats.json),
+// which is what antonionuzzi.com actually reads. Firestore (raw/offset) is never
+// exposed to the public site.
 //
 // Required environment variables (set as GitHub Actions secrets):
 //   JIRA_EMAIL, JIRA_API_TOKEN, XRAY_CLIENT_ID, XRAY_CLIENT_SECRET, FIREBASE_PASSWORD
+
+const fs = require('fs');
+const path = require('path');
 
 const JIRA_BASE = 'https://facilitygrid.atlassian.net';
 const JIRA_ACCOUNT_ID = '712020:fa86873e-8fde-4edc-9638-9d8f71fbf71f';
@@ -161,6 +168,24 @@ async function writeRaw(idToken, { bugs, projects, testCases }) {
   return res.json();
 }
 
+function intField(doc, key, field) {
+  const v = doc?.fields?.[key]?.mapValue?.fields?.[field]?.integerValue;
+  return v !== undefined ? parseInt(v, 10) : 0;
+}
+
+async function readCounters(idToken) {
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/stats/counters`;
+  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + idToken } });
+  if (!res.ok) throw new Error(`Firestore read failed: ${res.status} ${await res.text()}`);
+  return res.json();
+}
+
+function writePublicFile(front) {
+  const outPath = path.join(__dirname, '..', 'stats.json');
+  fs.writeFileSync(outPath, JSON.stringify(front, null, 2) + '\n');
+  console.log('Wrote', outPath, JSON.stringify(front));
+}
+
 async function main() {
   console.log('Counting bugs...');
   const bugs = await countBugs();
@@ -179,6 +204,16 @@ async function main() {
 
   console.log('Writing raw values to Firestore...');
   await writeRaw(idToken, { bugs, projects, testCases });
+
+  console.log('Reading back offsets to compute front...');
+  const doc = await readCounters(idToken);
+  const front = {
+    bugs: bugs + intField(doc, 'bugs', 'offset'),
+    projects: projects + intField(doc, 'projects', 'offset'),
+    testCases: testCases + intField(doc, 'testCases', 'offset'),
+  };
+
+  writePublicFile(front);
 
   console.log('Done.');
 }

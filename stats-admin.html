@@ -151,7 +151,7 @@
           <h1>Stats Antonionuzzi.com</h1>
         </div>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: -20px; margin-bottom: 30px;">
-          Il valore <b>Raw</b> arriva da Jira/Xray. Il <b>Front</b> (Raw + Offset) è quello mostrato sul sito pubblico.
+          Il valore <b>Raw</b> arriva da Jira/Xray (sync automatico lun 08:00 e mer 15:00). Il <b>Front</b> (Raw + Offset) è quello mostrato sul sito pubblico — viene pubblicato dal workflow GitHub, non da questa pagina: dopo aver salvato l'offset, o aspetti la prossima sincronizzazione o lanci "Run workflow" a mano su GitHub Actions per vederlo subito online.
         </p>
 
         <div id="metrics-container"></div>
@@ -281,9 +281,11 @@
             const docRef = doc(db, 'stats', 'counters');
             const snap = await getDoc(docRef);
             const data = snap.exists() ? snap.data() : {};
-            data[key] = Object.assign({}, data[key], { offset, front });
+            // Não gravamos "front" no Firestore — é sempre raw + offset, recalculado
+            // no momento da publicação (script de sync) para o arquivo público stats.json.
+            data[key] = Object.assign({}, data[key], { offset });
             await setDoc(docRef, data, { merge: true });
-            statusEl.textContent = 'Salvo ✓ (front = ' + front + ')';
+            statusEl.textContent = 'Salvo ✓ (front = ' + front + ' — será publicado na próxima sincronização, ou rode o workflow manualmente no GitHub)';
           } catch (err) {
             statusEl.textContent = 'Erro: ' + err.message;
           }
