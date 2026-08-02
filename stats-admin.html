@@ -124,6 +124,20 @@
       margin-left: 12px;
       color: #1a9c5c;
     }
+    .publish-reminder {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 16px;
+      background: #fff8e1;
+      border: 1px solid #f0d98c;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #6b5900;
+      line-height: 1.6;
+    }
+    .publish-reminder.show { display: block; }
+    .publish-reminder a { color: #0f57fb; font-weight: 600; }
+    .publish-reminder ol { margin: 6px 0 0; padding-left: 20px; }
   </style>
 </head>
 <body>
@@ -253,6 +267,15 @@
           </div>
           <button class="btn-save-metric" data-key="${m.key}" data-raw="${entry.raw || 0}">Salvar</button>
           <span class="save-status" id="status-${m.key}"></span>
+          <div class="publish-reminder" id="reminder-${m.key}">
+            ⚠️ O offset foi salvo, mas o site público (antonionuzzi.com) só é atualizado quando o workflow roda. Para publicar agora:
+            <ol>
+              <li>Vá em <a href="https://github.com/anuzzi79/cantinho/actions/workflows/sync-stats.yml" target="_blank" rel="noopener">github.com/anuzzi79/cantinho → Actions → Sync Stats from Jira/Xray</a></li>
+              <li>Clique no botão <b>"Run workflow"</b> (à direita)</li>
+              <li>Confirme clicando em <b>"Run workflow"</b> de novo na caixinha que aparece</li>
+            </ol>
+            Senão, será publicado sozinho na próxima sincronização automática (seg 08:00 ou qua 15:00, horário do Rio).
+          </div>
         `;
         metricsContainer.appendChild(card);
       }
@@ -285,7 +308,8 @@
             // no momento da publicação (script de sync) para o arquivo público stats.json.
             data[key] = Object.assign({}, data[key], { offset });
             await setDoc(docRef, data, { merge: true });
-            statusEl.textContent = 'Salvo ✓ (front = ' + front + ' — será publicado na próxima sincronização, ou rode o workflow manualmente no GitHub)';
+            statusEl.textContent = 'Salvo ✓ (novo front = ' + front + ')';
+            document.getElementById('reminder-' + key).classList.add('show');
           } catch (err) {
             statusEl.textContent = 'Erro: ' + err.message;
           }
