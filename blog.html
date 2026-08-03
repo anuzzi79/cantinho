@@ -346,10 +346,16 @@
 
 
     // Gestione Lingua con Auto-detect da IP
-    let currentLang = localStorage.getItem('blog_lang');
-    
-    // Se non c'è preferenza salvata, rileva dalla geolocalizzazione
-    if (!currentLang) {
+    // Un link esterno può forzare la lingua via ?lang=pt|en|it (es. dal sito principale)
+    const forcedLangParam = new URLSearchParams(window.location.search).get('lang');
+    const isValidForcedLang = forcedLangParam === 'pt' || forcedLangParam === 'en' || forcedLangParam === 'it';
+    let currentLang = isValidForcedLang ? forcedLangParam : localStorage.getItem('blog_lang');
+
+    if (isValidForcedLang) {
+        localStorage.setItem('blog_lang', currentLang);
+        updateLangUI();
+    } else if (!currentLang) {
+        // Se non c'è preferenza salvata, rileva dalla geolocalizzazione
         await detectLanguageFromIP();
     } else {
         updateLangUI();
